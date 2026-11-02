@@ -1,0 +1,198 @@
+@import "tailwindcss";
+
+/* ============================================================
+   upGrad School of Technology — Design Tokens (light theme only)
+   ============================================================ */
+:root {
+  /* Surfaces */
+  --canvas: #ffffff;        /* page background, pure white */
+  --surface: #ffffff;       /* cards */
+  --surface-sunken: #f4f4f1;/* subtle fills, chips */
+
+  /* Ink */
+  --ink: #0b0d12;           /* headings */
+  --ink-body: #3d4452;      /* body copy */
+  --ink-muted: #6b7280;     /* captions, labels */
+
+  /* Brand */
+  --accent: #e4002b;        /* upGrad red */
+  --topbar: var(--accent); /* announcement strip — brand red */
+  --accent-hover: #c40025;
+  --accent-soft: #fff1f3;   /* tinted background */
+
+  /* Lines */
+  --line: #e8e8e3;
+  --line-strong: #d9d9d2;
+
+  /* Chrome above the fold: TopBar (36px) + Navbar (56px) */
+  --header-h: 92px;
+
+  /* Elevation */
+  --shadow-sm: 0 1px 2px rgba(11, 13, 18, 0.04);
+  --shadow-md: 0 8px 24px -8px rgba(11, 13, 18, 0.12);
+  --shadow-lg: 0 24px 64px -24px rgba(11, 13, 18, 0.22);
+}
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-sunken: var(--surface-sunken);
+
+  --color-ink: var(--ink);
+  --color-body: var(--ink-body);
+  --color-muted: var(--ink-muted);
+
+  --color-accent: var(--accent);
+  --color-topbar: var(--topbar);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-soft: var(--accent-soft);
+
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+
+  --font-sans: var(--font-jakarta);
+  --font-display: var(--font-jakarta);
+}
+
+/* Base styles live in @layer base so Tailwind utilities (text-white, text-ink,
+   font-display …) always win over these element selectors. */
+@layer base {
+  html:not(.lenis) {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background: var(--canvas);
+    color: var(--ink-body);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* No `color` here on purpose: headings set their own via a utility
+     (text-ink, text-white …) so they work on light and on video/dark. */
+  h1, h2, h3, h4 {
+    letter-spacing: -0.025em;
+    text-wrap: balance;
+  }
+
+  ::selection {
+    background: var(--accent);
+    color: #fff;
+  }
+}
+
+/* Typeface is set unlayered on purpose: rules inside `@layer base` do not
+   apply in this Tailwind v4 + turbopack setup (the same reason heading colours
+   had to move out of it), so the font would silently fall back to system-ui. */
+html {
+  font-family: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Reusable primitives ---------------------------------------- */
+.container-page {
+  width: 100%;
+  max-width: 1280px;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+}
+@media (min-width: 1024px) {
+  .container-page { padding-inline: 2.5rem; }
+}
+
+/* Fine dotted grid used behind the hero visual */
+.bg-dotgrid {
+  background-image: radial-gradient(var(--line-strong) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
+}
+.animate-rise {
+  animation: rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+
+
+/* Infinite logo marquee, right-to-left.
+   The track renders the logo list twice, so translating it by exactly -50%
+   puts copy #2 where copy #1 started — the loop repeats with no visible seam. */
+@keyframes scroll-left {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.marquee-mask {
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 48px, #000 calc(100% - 48px), transparent);
+  mask-image: linear-gradient(to right, transparent, #000 48px, #000 calc(100% - 48px), transparent);
+}
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: scroll-left 18s linear infinite;
+}
+/* No column-gap on the track: each copy carries its own trailing gap instead,
+   so one copy is exactly half the track and -50% lands seamlessly. */
+/* Pause on hover so the marks stay readable when someone looks at them. */
+.marquee-mask:hover .marquee-track {
+  animation-play-state: paused;
+}
+
+/* Rotating conic-gradient border glow for primary CTAs (same technique as the
+   upGrad Framer hero): a large spinning gradient sits behind the button and the
+   solid fill is inset 1px on top, so only a sweeping sliver shows at the edge. */
+@keyframes border-spin {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to   { transform: translate(-50%, -50%) rotate(360deg); }
+}
+.cta-glow {
+  animation: border-spin 4s linear infinite;
+}
+
+/* On-enter reveal for scroll-revealed cards (see Specializations). Cards start
+   lowered and transparent; the observer adds .is-in once they scroll into view. */
+.reveal-card {
+  opacity: 0;
+  transform: translateY(48px);
+  transition:
+    opacity 700ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.reveal-card.is-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* Cards that rise into view once scrolled to (see BestOfBoth). */
+.reveal-item {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 600ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 600ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.reveal-item.is-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* Hero reveal-on-load. Only hidden once the inline script in layout.tsx has
+   flagged JS, so no-JS visitors always see the content. If the bundle never
+   runs, the failsafe brings everything back after 3s. */
+@keyframes reveal-failsafe {
+  to { visibility: visible; }
+}
+.js [data-reveal] {
+  visibility: hidden;
+  animation: reveal-failsafe 0s 3s forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .js [data-reveal] { visibility: visible; }
+  .animate-rise { animation: none; }
+  .reveal-item { opacity: 1; transform: none; transition: none; }
+  .reveal-card { opacity: 1; transform: none; transition: none; }
+  .cta-glow { animation: none; }
+  .marquee-track { animation: none; }
+  html { scroll-behavior: auto; }
+}
