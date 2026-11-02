@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { GlowButton } from "@/components/site/GlowButton";
+import { SectionHeading } from "@/components/site/SectionHeading";
 
 /**
  * "One Degree, Three Pathways"
@@ -24,6 +25,8 @@ import { GlowButton } from "@/components/site/GlowButton";
  *
  * Below 900px (and for prefers-reduced-motion) there is no pin: the cards sit
  * in a horizontal, snap-scrolling row, as on the reference.
+ *
+ * Heading, CTA type and button follow the site-wide section style.
  */
 const PATHS = [
   {
@@ -118,7 +121,7 @@ function ArcTitle({ lines, id, light }: { lines: readonly string[]; id: string; 
 function Card({ path }: { path: (typeof PATHS)[number] }) {
   return (
     <div
-      className={`relative mx-auto flex aspect-[0.85] w-full max-w-[338px] flex-col justify-between rounded-md py-10 text-center ${
+      className={`relative mx-auto flex aspect-[0.85] w-full max-w-[338px] flex-col justify-between rounded-[6px] py-10 text-center ${
         path.red ? "text-white" : "border border-[#0a0a0b] bg-white text-[#0a0a0b]"
       }`}
       // brand red gradient from sot.upgrad.com/catalyst
@@ -149,8 +152,11 @@ function PathwayCta() {
     <div className="container-page">
     <div className="flex flex-col items-center gap-5 border-t border-black/10 pt-5 text-center md:flex-row md:justify-between md:text-left">
       <div>
-        <h3 className="text-[20px] font-semibold leading-tight text-ink">
-          Ready to choose your <span className="text-[#e6161f]">pathway?</span>
+        <h3 className="font-display text-[20px] font-bold leading-tight tracking-[-0.02em] text-ink">
+          Ready to choose your{" "}
+          <span className="font-[family-name:var(--font-bricolage)] font-semibold text-accent">
+            pathway?
+          </span>
         </h3>
         <p className="mt-1.5 text-[14px] leading-relaxed text-body">
           Take uGNET to unlock a tech career, startup support, or higher studies
@@ -161,7 +167,7 @@ function PathwayCta() {
           <span aria-hidden>&middot;</span> 4-year B.Tech in CS
         </p>
       </div>
-      <GlowButton href="#apply" className="shrink-0">
+      <GlowButton href="#apply" streak="#0b0d12" className="shrink-0">
         Apply Now
         <svg viewBox="0 0 16 16" className="size-4" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
           <path d="M3 8h10M9 4l4 4-4 4" />
@@ -246,24 +252,26 @@ export function Pathways() {
     };
   }, [pinned]);
 
-  const heading = (
-    <header className="mx-auto max-w-[934px] px-6 text-center">
-      <h2 className="font-display text-[clamp(1.625rem,2.8vw,2.5rem)] font-semibold leading-[1.33] tracking-[-0.4px] text-ink">
-        One Degree, <span className="text-[#e6161f]">Three Pathways</span>
-      </h2>
-      <p className="mt-3 font-display text-[clamp(0.9375rem,1.2vw,1rem)] font-normal leading-[1.6] text-muted">
-        A successful tech career, your own startup, or pursue higher education.
-      </p>
-    </header>
+  /* In the pinned frame on short screens (<820px tall) the intro line is
+     dropped so the fanned cards never ride up over the heading. */
+  const heading = (pinnedFrame: boolean) => (
+    <SectionHeading
+      title="One Degree,"
+      accent="Three Pathways"
+      intro="A successful tech career, your own startup, or pursue higher education."
+      size="md"
+      className={`px-6 ${pinnedFrame ? "[@media(max-height:820px)]:[&_p]:hidden" : ""}`}
+    />
   );
 
   return (
-    <section id="pathways" className="bg-white">
+    <section id="pathways" className="bg-canvas">
       {pinned ? (
         <div ref={trackRef} style={{ height: `calc(100vh + ${PATHS.length * 40}vh)` }}>
           <div className="sticky top-0 h-screen overflow-hidden">
-            <div className="absolute inset-x-0 top-[7vh] z-10">{heading}</div>
-            <div className="absolute inset-x-0 bottom-[5vh] z-10 bg-white">
+            {/* starts below the fixed 76px nav */}
+            <div className="absolute inset-x-0 top-[calc(76px+2.5vh)] z-10">{heading(true)}</div>
+            <div className="absolute inset-x-0 bottom-[5vh] z-10 bg-canvas">
               <PathwayCta />
             </div>
             <div
@@ -271,7 +279,7 @@ export function Pathways() {
               className="relative aspect-square"
               style={{
                 width: RADIUS * 2,
-                marginTop: "49vh",
+                marginTop: "max(49vh, 380px)",
                 marginLeft: `calc(50vw - ${RADIUS}px)`,
                 transition: `transform 500ms ${ELASTIC}`,
               }}
@@ -294,8 +302,8 @@ export function Pathways() {
           </div>
         </div>
       ) : (
-        <div className="pt-14">
-          {heading}
+        <div className="pt-20">
+          {heading(false)}
           <div className="mt-10 flex snap-x snap-mandatory gap-4 overflow-x-auto px-6 [scrollbar-width:none]">
             {PATHS.map((path) => (
               <div key={path.n} className="w-[80vw] max-w-[338px] shrink-0 snap-center">
@@ -303,7 +311,7 @@ export function Pathways() {
               </div>
             ))}
           </div>
-          <div className="mt-10 pb-14">
+          <div className="mt-10 pb-20">
             <PathwayCta />
           </div>
         </div>

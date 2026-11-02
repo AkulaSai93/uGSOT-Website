@@ -2,6 +2,8 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import { Reveal } from "@/components/motion/Reveal";
+import { SectionHeading } from "@/components/site/SectionHeading";
 
 /**
  * "Where World-Class University Meets Silicon Valley Learning"
@@ -20,8 +22,11 @@ import { useEffect, useRef, useState } from "react";
  * heading is still moving, or the two overlap mid-flight.
  *
  * Below lg, and for prefers-reduced-motion, the pinning is skipped entirely and
- * the section renders as a plain heading + card grid: a pinned stage that eats
- * scroll is hostile on a phone.
+ * the section renders as a plain heading + the two panels, revealed on scroll:
+ * a pinned stage that eats scroll is hostile on a phone.
+ *
+ * Type follows the site-wide section style: bold display with the red accent
+ * words in the Bricolage Grotesque accent face.
  *
  * CENTRE VIDEO: currently the hero footage (CloudFront, webm + mp4). The
  * section's own clip is on disk at public/videos/best-of-both.mp4. The slot
@@ -133,7 +138,7 @@ function Rows({ items, dark }: { items: Item[]; dark: boolean }) {
       {items.map((item, i) => (
         <li
           key={item.title}
-          className={`group -mx-2 flex flex-1 items-center gap-4 rounded-2xl px-2 py-2 transition-colors duration-300 ${
+          className={`group -mx-2 flex flex-1 items-center gap-4 rounded-[6px] px-2 py-2 transition-colors duration-300 ${
             dark ? "hover:bg-white/[0.08]" : "hover:bg-black/[0.03]"
           } ${
             i > 0
@@ -144,7 +149,7 @@ function Rows({ items, dark }: { items: Item[]; dark: boolean }) {
           }`}
         >
           <span
-            className={`grid size-11 shrink-0 place-items-center rounded-[14px] transition-transform duration-300 group-hover:scale-105 ${
+            className={`grid size-11 shrink-0 place-items-center rounded-[6px] transition-transform duration-300 group-hover:scale-105 ${
               dark ? "bg-white/15" : "bg-[#f3f4f6]"
             }`}
           >
@@ -198,7 +203,7 @@ function Panel({
 }) {
   return (
     <div
-      className={`relative isolate flex h-full flex-col overflow-hidden rounded-xl px-8 pb-6 pt-[68px] ${
+      className={`relative isolate flex h-full flex-col overflow-hidden rounded-[6px] px-8 pb-6 pt-[68px] ${
         dark
           ? ""
           : "border border-black/[0.08] bg-white"
@@ -234,7 +239,7 @@ function Panel({
       </span>
 
       <h3
-        className={`font-display text-[clamp(1rem,1.4vw,1.25rem)] font-extrabold uppercase leading-tight ${
+        className={`font-display text-[clamp(1rem,1.3vw,1.25rem)] font-bold leading-tight tracking-[-0.02em] ${
           dark ? "text-white" : "text-[#0a0a0b]"
         }`}
       >
@@ -341,10 +346,13 @@ export function BestOfBoth() {
     // Two lines rather than one, so the converged block is far narrower and
     // the type can be much larger: 5.2vw still clears a 48px gutter at 1024,
     // 1280 and 1440.
-    "font-display text-[clamp(1.625rem,2.8vw,2.5rem)] font-semibold leading-[1.33] tracking-[-0.4px] text-ink whitespace-nowrap";
+    "font-display text-[clamp(1.625rem,2.8vw,2.5rem)] font-bold leading-[1.2] tracking-[-0.03em] text-ink whitespace-nowrap";
+
+  /** red accent words: the hero's accent face */
+  const accentClass = "font-[family-name:var(--font-bricolage)] font-semibold tracking-[-0.01em] text-accent";
 
   return (
-    <section id="best-of-both" className="bg-white">
+    <section id="best-of-both" className="bg-canvas">
       {animated ? (
         <div ref={trackRef} className="relative" style={{ height: "260vh" }}>
           <div
@@ -386,7 +394,7 @@ export function BestOfBoth() {
                     {i === 1 ? (
                       <>
                         Meets{" "}
-                        <span className="text-[#e6161f]">Silicon</span>
+                        <span className={accentClass}>Silicon</span>
                         {"\u00a0"}
                       </>
                     ) : (
@@ -430,7 +438,7 @@ export function BestOfBoth() {
                 {HEAD_RIGHT.map((line, i) => (
                   <span
                     key={line}
-                    className={`block ${i === 1 ? "text-[#e6161f]" : ""}`}
+                    className={`block ${i === 1 ? accentClass : ""}`}
                   >
                     {line}
                   </span>
@@ -473,14 +481,32 @@ export function BestOfBoth() {
           </div>
         </div>
       ) : (
-        <div className="container-page pt-14 lg:pt-16">
-          <h2 className="mx-auto max-w-3xl text-center font-display text-[clamp(1.625rem,2.8vw,2.5rem)] font-semibold leading-[1.33] tracking-[-0.4px] text-ink">
-            {HEAD_LEFT[0]}
-            {HEAD_RIGHT[0]} Meets{" "}
-            <span className="text-[#e6161f]">
-              Silicon {HEAD_RIGHT[1]}
-            </span>
-          </h2>
+        <div className="container-page py-20">
+          <SectionHeading
+            title="Where World-Class University Meets"
+            accent="Silicon Valley Learning"
+            size="md"
+          />
+          <Reveal className="mt-12 grid gap-5 md:grid-cols-2" stagger={0.12}>
+            <div data-reveal-item>
+              <Panel
+                watermark="UNIVERSITY"
+                title="University Advantage"
+                tagline="Gives you the foundation"
+                items={UNIVERSITY}
+                dark={false}
+              />
+            </div>
+            <div data-reveal-item>
+              <Panel
+                watermark="SILICON"
+                title="Silicon Valley Style Learning"
+                tagline="Helps you go further"
+                items={SILICON}
+                dark
+              />
+            </div>
+          </Reveal>
         </div>
       )}
     </section>

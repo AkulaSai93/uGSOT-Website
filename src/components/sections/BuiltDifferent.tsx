@@ -1,3 +1,6 @@
+import { Reveal } from "@/components/motion/Reveal";
+import { SectionHeading } from "@/components/site/SectionHeading";
+
 /**
  * "How We're Built Different" — reproduced from sot.upgrad.com, built from that
  * section's own class list and computed styles rather than by eye:
@@ -20,6 +23,9 @@
  *   body       12px -> sm:14px, 400, lh 1.625, neutral-400, centred, max-w-xs
  *   accent bar 4x32px at left, centred vertically, neutral-700, grows to 80px
  *              on hover with a red glow layer fading in
+ *
+ * Heading and cell type follow the site-wide section style (SectionHeading,
+ * bold display titles); the eight cells rise in, staggered, on scroll.
  */
 const PRIMARY = "oklch(0.577 0.245 27.325)";
 
@@ -71,27 +77,21 @@ export function BuiltDifferent() {
     <section
       id="built-different"
       aria-labelledby="built-different-heading"
-      className="w-full bg-surface py-14 sm:py-16"
+      className="w-full bg-canvas py-20 lg:py-28"
     >
       <div className="container-page flex flex-col gap-10 lg:gap-[60px]">
-        <header className="mx-auto max-w-[609px] text-center text-ink">
-          <h2
-            id="built-different-heading"
-            className="font-display text-[clamp(1.625rem,2.8vw,2.5rem)] font-semibold leading-[1.33] tracking-[-0.4px]"
-          >
-            How{" "}
-            <span style={{ color: PRIMARY }}>We&rsquo;re Built Different</span>
-          </h2>
-          <p className="mt-5 font-display text-[clamp(0.9375rem,1.2vw,1rem)] font-normal leading-[1.6] text-muted">
-            Designed to go beyond traditional education with hands-on learning,
-            global exposure, industry integration, and career-focused outcomes.
-          </p>
-        </header>
+        <SectionHeading
+          id="built-different-heading"
+          title="How"
+          accent="We’re Built Different"
+          intro="Designed to go beyond traditional education with hands-on learning, global exposure, industry integration, and career-focused outcomes."
+        />
 
-        <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+        <Reveal stagger={0.06} className="relative z-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
           {FEATURES.map((feature) => (
             <div
               key={feature.title}
+              data-reveal-item
               className="group/feature relative flex flex-col overflow-hidden border-b border-line py-8 last:border-b-0 sm:py-10 md:border-r md:[&:nth-last-child(-n+2)]:border-b-0 lg:border-b lg:border-l lg:border-r lg:[&:nth-child(4n)]:border-r-0 lg:[&:nth-last-child(-n+4)]:border-b-0"
             >
               {/* left accent bar: 4x32, grows to 80 and glows red on hover */}
@@ -121,17 +121,17 @@ export function BuiltDifferent() {
                   />
                 </div>
 
-                <h3 className="relative z-10 mb-2 text-center text-base font-bold text-ink sm:mb-3 sm:text-lg">
+                <h3 className="relative z-10 mb-2 text-center font-display text-base font-bold tracking-[-0.02em] text-ink sm:mb-3 sm:text-lg">
                   {feature.title}
                 </h3>
 
-                <p className="relative z-10 max-w-xs text-center text-xs leading-relaxed text-body sm:text-sm">
+                <p className="relative z-10 max-w-xs text-center text-[13px] leading-relaxed text-body sm:text-[14px]">
                   {feature.body}
                 </p>
               </div>
             </div>
           ))}
-        </div>
+        </Reveal>
       </div>
     </section>
   );

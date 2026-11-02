@@ -1,4 +1,6 @@
 import Image from "next/image";
+import { Reveal } from "@/components/motion/Reveal";
+import { SectionHeading } from "@/components/site/SectionHeading";
 
 /**
  * "New-Gen Engineering Specializations"
@@ -7,7 +9,8 @@ import Image from "next/image";
  * verbatim.
  *
  * Layout is a bento grid (4 columns x 2 rows at lg) with the copy laid over
- * each photo; AI/ML and Cloud are the wide tiles. Static — no scroll effects.
+ * each photo; AI/ML and Cloud are the wide tiles. Heading and tiles follow
+ * the site-wide section style; the tiles rise in, staggered, on scroll.
  */
 const SPECIALIZATIONS = [
   {
@@ -57,7 +60,8 @@ function Card({ spec }: { spec: (typeof SPECIALIZATIONS)[number] }) {
   const wide = spec.key === "aiml" || spec.key === "cloud";
   return (
     <article
-      className={`group relative flex min-h-[260px] flex-col justify-end overflow-hidden rounded-2xl bg-ink p-6 ${PLACEMENT[spec.key]}`}
+      data-reveal-item
+      className={`group relative flex min-h-[260px] flex-col justify-end overflow-hidden rounded-[6px] bg-ink p-6 ${PLACEMENT[spec.key]}`}
       style={{ isolation: "isolate" }}
     >
       <Image
@@ -77,7 +81,7 @@ function Card({ spec }: { spec: (typeof SPECIALIZATIONS)[number] }) {
           (or keyboard focus) by animating its grid row from 0fr to 1fr. */}
       <div>
         <h3
-          className={`font-semibold leading-tight text-white ${
+          className={`font-display font-bold leading-tight tracking-[-0.02em] text-white ${
             wide ? "max-w-[480px] text-[clamp(1.25rem,1.7vw,1.5rem)]" : "text-[16px]"
           }`}
         >
@@ -95,30 +99,29 @@ function Card({ spec }: { spec: (typeof SPECIALIZATIONS)[number] }) {
 
 export function Specializations() {
   return (
-    <section id="specializations" className="relative bg-white py-14 lg:py-16">
+    <section id="specializations" className="relative bg-canvas py-20 lg:py-28">
       <div className="container-page relative">
-        {/* Sticky heading, sitting behind the cards so they travel over it */}
-        <header className="mx-auto max-w-[934px] text-center">
-          <h2 className="font-display text-[clamp(1.625rem,2.8vw,2.5rem)] font-semibold leading-[1.33] tracking-[-0.4px] text-ink">
-            New-Gen Engineering{" "}
-            <span className="text-[#e7000b]">Specializations</span>
-          </h2>
-          <p className="mt-5 font-display text-[clamp(0.9375rem,1.2vw,1rem)] font-normal leading-[1.6] text-muted">
-            Explore future-focused domains shaping the next decade of technology
-            <br className="hidden sm:block" /> AI / ML, Cloud, Blockchain and
-            many more
-          </p>
-        </header>
+        <SectionHeading
+          title="New-Gen Engineering"
+          accent="Specializations"
+          intro={
+            <>
+              Explore future-focused domains shaping the next decade of technology
+              <br className="hidden sm:block" /> AI / ML, Cloud, Blockchain and many more
+            </>
+          }
+        />
 
         {/* Styles are inline rather than in globals.css: this project's dev
             server does not reliably pick up new rules added there. */}
-        <div
-          className="mt-10 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4 lg:grid-rows-[300px_300px]"
+        <Reveal
+          stagger={0.08}
+          className="mt-14 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4 lg:grid-rows-[300px_300px]"
         >
           {SPECIALIZATIONS.map((spec) => (
             <Card key={spec.key} spec={spec} />
           ))}
-        </div>
+        </Reveal>
       </div>
     </section>
   );

@@ -181,7 +181,7 @@ export function Navbar() {
         aria-hidden={!open}
         inert={!open}
         data-lenis-prevent
-        className="menu-sheet invisible fixed inset-0 z-40 overflow-y-auto bg-[#fbf8f5]"
+        className="menu-sheet invisible fixed inset-0 z-40 overflow-y-auto bg-[#ffffff]"
       >
         <div className="container-page grid min-h-full gap-10 pb-10 pt-[112px] lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] lg:items-end lg:gap-16 lg:pb-14">
           <nav aria-label="Site">

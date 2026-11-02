@@ -7,6 +7,7 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { ArrowRight, Download } from "lucide-react";
+import { MaskWord } from "@/components/motion/MaskWord";
 import { Magnetic } from "@/components/motion/Magnetic";
 import { CompanyLogos } from "@/components/site/CompanyLogos";
 import { GlowButton } from "@/components/site/GlowButton";
@@ -17,22 +18,6 @@ gsap.registerPlugin(ScrollTrigger, useGSAP);
 /** Existing upGrad SoT hero footage. Swap for a self-hosted /videos/hero.webm later. */
 const VIDEO_BASE =
   "https://dd848r0fq5a5i.cloudfront.net/asset-optimization/video/landing_herosection_video/landing_herosection_video";
-
-/**
- * One headline word inside an overflow mask, so it can rise into view.
- * The mask is padded on every side (and pulled back with matching negative
- * margins, so layout is unchanged) because italic serif glyphs like the "e" in
- * "Science" overhang their advance box and would otherwise be clipped.
- */
-function Word({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  return (
-    <span className="-mx-[0.15em] -mb-[0.04em] -mt-[0.06em] inline-block overflow-hidden px-[0.15em] pb-[0.12em] pt-[0.06em] align-bottom">
-      <span data-reveal="word" className={`inline-block ${className}`}>
-        {children}
-      </span>
-    </span>
-  );
-}
 
 /**
  * Hero — "the campus opens up".
@@ -167,7 +152,7 @@ export function Hero() {
     <section
       ref={root}
       aria-label="AI-First B.Tech in Computer Science"
-      className="relative h-[200svh] bg-[#fbf8f5] text-ink motion-reduce:h-svh"
+      className="relative h-[200svh] bg-[#ffffff] text-ink motion-reduce:h-svh"
     >
       <div ref={stage} className="sticky top-0 isolate h-svh min-h-[640px] overflow-clip">
         {/* --------------------------------------------- background image */}
@@ -184,8 +169,8 @@ export function Hero() {
           </div>
           {/* Washes: keep the left (copy) bright so ink type reads cleanly;
               the campus and the students on the right stay vivid. */}
-          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(251,248,245,0.78)_0%,rgba(251,248,245,0.45)_40%,rgba(251,248,245,0)_62%)]" />
-          <div className="absolute inset-0 max-sm:bg-[linear-gradient(180deg,rgba(251,248,245,0.55)_0%,rgba(251,248,245,0.35)_50%,rgba(251,248,245,0.8)_100%)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.78)_0%,rgba(255,255,255,0.45)_40%,rgba(255,255,255,0)_62%)]" />
+          <div className="absolute inset-0 max-sm:bg-[linear-gradient(180deg,rgba(255,255,255,0.55)_0%,rgba(255,255,255,0.35)_50%,rgba(255,255,255,0.8)_100%)]" />
         </div>
 
         {/* ------------------------------------------- the campus film (pill → full bleed) */}
@@ -206,9 +191,9 @@ export function Hero() {
             <source src={`${VIDEO_BASE}.webm`} type="video/webm" />
             <source src={`${VIDEO_BASE}.mp4`} type="video/mp4" />
           </video>
-          {/* Bottom fade into the white section below, so the full-bleed film
+          {/* Bottom fade into the page canvas below, so the full-bleed film
               has no hard edge. Hidden while the film is still a pill. */}
-          <div className="hero-fade absolute inset-x-0 bottom-0 h-[38%] bg-[linear-gradient(180deg,rgba(255,255,255,0)_0%,rgba(255,255,255,0.55)_45%,#fff_100%)] opacity-0" />
+          <div className="hero-fade absolute inset-x-0 bottom-0 h-[38%] bg-[linear-gradient(180deg,rgba(255,255,255,0)_0%,rgba(255,255,255,0.55)_45%,#ffffff_100%)] opacity-0" />
         </div>
 
         {/* ------------------------------------------------------- act 1 */}
@@ -218,14 +203,14 @@ export function Hero() {
             <span className="sr-only">AI-First B.Tech in Computer Science</span>
             <span aria-hidden className="block">
               <span className="hero-line-1 block">
-                <Word>AI-First</Word>
+                <MaskWord attr="hero">AI-First</MaskWord>
               </span>
               <span className="hero-line-2 flex items-center gap-[0.18em]">
                 <span className="hero-line-2-text inline-flex gap-[0.22em]">
-                  <Word>B.Tech</Word>
-                  <Word className="font-[family-name:var(--font-instrument)] font-normal italic tracking-[-0.02em] text-ink/55">
+                  <MaskWord attr="hero">B.Tech</MaskWord>
+                  <MaskWord attr="hero" className="font-[family-name:var(--font-bricolage)] font-semibold tracking-[-0.02em] text-ink/55">
                     in
-                  </Word>
+                  </MaskWord>
                 </span>
                 {/* Placeholder box: the floating film is measured against it. */}
                 <span
@@ -234,10 +219,10 @@ export function Hero() {
                 />
               </span>
               <span className="hero-line-3 flex flex-wrap gap-x-[0.22em]">
-                <Word>Computer</Word>
-                <Word className="font-[family-name:var(--font-instrument)] font-normal italic tracking-[-0.02em] text-accent">
+                <MaskWord attr="hero">Computer</MaskWord>
+                <MaskWord attr="hero" className="font-[family-name:var(--font-bricolage)] font-semibold tracking-[-0.02em] text-accent">
                   Science
-                </Word>
+                </MaskWord>
               </span>
             </span>
           </h1>

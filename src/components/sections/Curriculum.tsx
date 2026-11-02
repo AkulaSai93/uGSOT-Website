@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { SectionHeading } from "@/components/site/SectionHeading";
 
 /**
  * "Build Industry-Preferred Skills Through Practical Learning"
@@ -19,6 +20,8 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
  * The active year is whichever block's top has crossed 45% of the viewport,
  * tracked by one rAF-throttled scroll handler. Below lg the panel is not
  * sticky: each year renders its own panel inline under its block.
+ *
+ * Type, corners and heading follow the site-wide section style.
  */
 type Project = { title: string; body: string; img: string };
 type Year = {
@@ -332,7 +335,7 @@ function YearPanel({ year, index }: { year: Year; index: number }) {
     rowRef.current?.scrollBy({ left: dir * (rowRef.current.clientWidth - 40), behavior: "smooth" });
 
   return (
-    <div className="overflow-hidden rounded-lg border border-black/[0.08] bg-white">
+    <div className="overflow-hidden rounded-[6px] border border-black/[0.08] bg-white">
       <div className="px-7 pt-6">
         <p className="text-[13px] font-semibold text-[#e6161f]">
           {year.label}
@@ -340,7 +343,7 @@ function YearPanel({ year, index }: { year: Year; index: number }) {
             {String(index + 1).padStart(2, "0")} / {String(YEARS.length).padStart(2, "0")}
           </span>
         </p>
-        <h3 className="mt-2 text-[24px] font-semibold leading-tight text-ink">
+        <h3 className="mt-2 font-display text-[24px] font-bold leading-tight tracking-[-0.02em] text-ink">
           {year.title}
         </h3>
         <p className="mt-2 text-[14px] leading-relaxed text-body">
@@ -363,9 +366,9 @@ function YearPanel({ year, index }: { year: Year; index: number }) {
           {year.projects.map((p) => (
             <li
               key={p.title}
-              className="w-[calc((100%-32px)/3)] min-w-[220px] shrink-0 snap-start rounded-xl border border-black/[0.1] bg-white p-4"
+              className="w-[calc((100%-32px)/3)] min-w-[220px] shrink-0 snap-start rounded-[6px] border border-black/[0.1] bg-white p-4"
             >
-              <div className="relative aspect-[1.68] overflow-hidden rounded-md bg-sunken">
+              <div className="relative aspect-[1.68] overflow-hidden rounded-[4px] bg-sunken">
                 <Image
                   src={`/images/curriculum/${p.img}`}
                   alt=""
@@ -376,7 +379,7 @@ function YearPanel({ year, index }: { year: Year; index: number }) {
                   className="scale-[1.45] object-cover"
                 />
               </div>
-              <h4 className="mt-3.5 line-clamp-2 min-h-[2lh] text-[16px] font-semibold leading-snug text-[#e6161f]">
+              <h4 className="mt-3.5 line-clamp-2 min-h-[2lh] font-display text-[16px] font-bold leading-snug tracking-[-0.01em] text-ink">
                 {p.title}
               </h4>
               <p className="mt-1.5 text-[13.5px] leading-snug text-[#616161]">
@@ -393,7 +396,7 @@ function YearPanel({ year, index }: { year: Year; index: number }) {
               type="button"
               onClick={() => scrollRow(dir)}
               aria-label={dir < 0 ? "Previous projects" : "Next projects"}
-              className={`absolute top-[54px] grid size-11 place-items-center rounded-full bg-black/30 text-white backdrop-blur-sm transition-colors hover:bg-black/50 ${
+              className={`absolute top-[54px] grid size-11 place-items-center rounded-[6px] bg-black/30 text-white backdrop-blur-sm transition-colors hover:bg-black/50 ${
                 dir < 0 ? "left-3" : "right-3"
               }`}
             >
@@ -411,7 +414,7 @@ function YearPanel({ year, index }: { year: Year; index: number }) {
           {year.skills.map((s) => (
             <li
               key={s}
-              className="rounded bg-[#f4f4f5] px-3 py-1.5 text-[13px] font-medium text-ink"
+              className="rounded-[4px] border border-ink/10 bg-canvas px-3 py-1.5 text-[13px] font-medium text-ink"
             >
               {s}
             </li>
@@ -460,20 +463,15 @@ export function Curriculum() {
   }, []);
 
   return (
-    <section id="curriculum" className="bg-white py-14 lg:py-16">
+    <section id="curriculum" className="bg-canvas py-20 lg:py-28">
       <div className="container-page">
-        <header className="mx-auto max-w-[934px] text-center">
-          <h2 className="font-display text-[clamp(1.625rem,2.8vw,2.5rem)] font-semibold leading-[1.33] tracking-[-0.4px] text-ink">
-            Build Industry-Preferred Skills Through{" "}
-            <span className="text-[#e6161f]">Practical Learning</span>
-          </h2>
-          <p className="mt-5 font-display text-[clamp(0.9375rem,1.2vw,1rem)] font-normal leading-[1.6] text-muted">
-            A structured learning journey designed with input from industry
-            experts.
-          </p>
-        </header>
+        <SectionHeading
+          title="Build Industry-Preferred Skills Through"
+          accent="Practical Learning"
+          intro="A structured learning journey designed with input from industry experts."
+        />
 
-        <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,2.2fr)] lg:gap-12">
+        <div className="mt-16 grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,2.2fr)] lg:gap-12">
           {/* Left: timeline of years (Masters' Union) */}
           {/* min-w-0: without it the inline YearPanel carousel sets this grid
               item's min width and the whole page scrolls sideways on phones. */}
@@ -508,10 +506,10 @@ export function Curriculum() {
                       on ? "opacity-100" : "lg:opacity-40"
                     }`}
                   >
-                    <span className="inline-block rounded bg-[#f3f4f6] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink">
+                    <span className="inline-block rounded-[4px] border border-ink/10 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-ink">
                       {year.label}
                     </span>
-                    <h3 className="mt-3 text-[clamp(1.25rem,1.7vw,1.5rem)] font-semibold leading-tight text-ink">
+                    <h3 className="mt-3 font-display text-[clamp(1.25rem,1.7vw,1.5rem)] font-bold leading-tight tracking-[-0.02em] text-ink">
                       {year.title}
                     </h3>
 

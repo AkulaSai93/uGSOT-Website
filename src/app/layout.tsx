@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Instrument_Serif, Plus_Jakarta_Sans } from "next/font/google";
+import { Bricolage_Grotesque, Plus_Jakarta_Sans } from "next/font/google";
 import { SmoothScroll } from "@/components/motion/SmoothScroll";
 import "lenis/dist/lenis.css";
 import "./globals.css";
@@ -12,12 +12,11 @@ const jakarta = Plus_Jakarta_Sans({
   display: "swap",
 });
 
-/** Editorial accent: Instrument Serif italic, used for single words only. */
-const instrument = Instrument_Serif({
-  variable: "--font-instrument",
+/** Accent: Bricolage Grotesque, for the highlighted words in headings only. */
+const bricolage = Bricolage_Grotesque({
+  variable: "--font-bricolage",
   subsets: ["latin"],
-  weight: "400",
-  style: ["normal", "italic"],
+  weight: ["500", "600", "700"],
   display: "swap",
 });
 
@@ -35,13 +34,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${jakarta.variable} ${instrument.variable} h-full antialiased`}
+      className={`${jakarta.variable} ${bricolage.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: JS_FLAG }} />
       </head>
-      <body className="flex min-h-full flex-col bg-white">
+      <body className="flex min-h-full flex-col bg-canvas">
         <SmoothScroll />
         {children}
       </body>
