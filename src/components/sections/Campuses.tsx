@@ -51,7 +51,7 @@ const CAMPUSES = [
 ] as const;
 
 /** radius of the tab's top corners and of its flared shoulders */
-const SHOULDER = 8;
+const SHOULDER = 6;
 const TAB_RED = "#e4002b";
 
 /**

@@ -8,6 +8,10 @@ import { Curriculum } from "@/components/sections/Curriculum";
 import { Pathways } from "@/components/sections/Pathways";
 import { Campuses } from "@/components/sections/Campuses";
 import { Leaders } from "@/components/sections/Leaders";
+import { Faculty } from "@/components/sections/Faculty";
+import { IITRace } from "@/components/sections/IITRace";
+import { Spotlight } from "@/components/sections/Spotlight";
+import { News } from "@/components/sections/News";
 
 export default function Home() {
   return (
@@ -23,6 +27,10 @@ export default function Home() {
         <Pathways />
         <Campuses />
         <Leaders />
+        <Faculty />
+        <IITRace />
+        <Spotlight />
+        <News />
       </main>
     </>
   );

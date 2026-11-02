@@ -120,7 +120,7 @@ export function Leaders() {
 
         const tl = gsap.timeline({
           defaults: { ease: "expo.out" },
-          scrollTrigger: { trigger: q("[data-photo]")[0], start: "top 80%", once: true },
+          scrollTrigger: { trigger: q("[data-photo]")[0], start: "top 80%", toggleActions: "play none none none" },
         });
         tl.fromTo(
           q("[data-photo]"),
@@ -151,7 +151,7 @@ export function Leaders() {
             duration: 1,
             ease: "expo.out",
             stagger: 0.12,
-            scrollTrigger: { trigger: q("[data-cols]")[0], start: "top 85%", once: true },
+            scrollTrigger: { trigger: q("[data-cols]")[0], start: "top 85%", toggleActions: "play none none none" },
           },
         );
       });

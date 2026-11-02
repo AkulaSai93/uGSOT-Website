@@ -411,7 +411,7 @@ export function BestOfBoth() {
                   marginInline: "calc((1 - var(--a)) * 12px)",
                 }}
               >
-                <span className="absolute left-0 top-1/2 block w-full -translate-y-1/2 overflow-hidden rounded-lg bg-[linear-gradient(145deg,#e9edf4,#f3e6e8)] [height:min(68vh,620px)]">
+                <span className="absolute left-0 top-1/2 block w-full -translate-y-1/2 overflow-hidden rounded-[6px] bg-[linear-gradient(145deg,#e9edf4,#f3e6e8)] [height:min(68vh,620px)]">
                   <video
                     autoPlay
                     muted

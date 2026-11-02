@@ -60,7 +60,7 @@ export function SectionHeading({
         const q = gsap.utils.selector(ref);
         const tl = gsap.timeline({
           defaults: { ease: "expo.out" },
-          scrollTrigger: { trigger: ref.current, start: "top 85%", once: true },
+          scrollTrigger: { trigger: ref.current, start: "top 85%", toggleActions: "play none none none" },
         });
         tl.fromTo(
           q("[data-heading-word]"),

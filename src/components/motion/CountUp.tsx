@@ -29,7 +29,7 @@ export function CountUp({ value, className = "" }: { value: string; className?: 
         n: target,
         duration: 1.8,
         ease: "expo.out",
-        scrollTrigger: { trigger: el, start: "top 90%", once: true },
+        scrollTrigger: { trigger: el, start: "top 90%", toggleActions: "play none none none" },
         onStart: () => {
           el.textContent = "0";
         },

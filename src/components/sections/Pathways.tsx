@@ -331,7 +331,7 @@ export function Pathways() {
         ease: "expo.out",
         stagger: 0.1,
         clearProps: "filter",
-        scrollTrigger: { trigger: grid, start: "top 85%", once: true },
+        scrollTrigger: { trigger: grid, start: "top 85%", toggleActions: "play none none none" },
       },
     );
     return () => {
