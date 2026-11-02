@@ -22,11 +22,13 @@ const VIDEO_BASE =
 /**
  * Hero — "the campus opens up".
  *
- * Act 1 (first screen): oversized kinetic headline on a light, painted sky
- * (students looking out at a glowing campus — generated with Figma AI,
- * public/images/hero/hero-campus.png). The campus film plays inside a pill
- * set into the headline itself ("B.Tech in [film]"). Below it, the same
- * content block as the current site: specialisations, uGNET, facts, CTAs.
+ * Act 1 (first screen): oversized kinetic headline over a full-bleed
+ * illustration in the Conclave 2026 manner (public/images/hero/hero-skyline.jpg,
+ * generated with Figma AI): students seen from behind looking out at a city
+ * skyline at sunrise, painterly clouds, a near-neutral palette with only a
+ * touch of red, and bright on the left for the copy. The campus film plays inside a pill set into the headline itself
+ * ("B.Tech in [film]"). Below it, the same content block as the current
+ * site: specialisations, uGNET, facts, CTAs.
  *
  * Act 2 (scroll): the section is 200svh tall with a sticky stage. Scrolling
  * scrubs the pill open to a clean full-bleed film while the headline splits
@@ -156,21 +158,21 @@ export function Hero() {
     >
       <div ref={stage} className="sticky top-0 isolate h-svh min-h-[640px] overflow-clip">
         {/* --------------------------------------------- background image */}
+        {/* Full-bleed illustration, Conclave-style: students looking out at a
+            city skyline at sunrise on the right, calm bright sky on the left. A white wash
+            on the left (and top-to-bottom on phones) keeps the ink type clean. */}
         <div aria-hidden className="hero-bg-wrap absolute inset-0 -z-10">
           <div className="hero-bg absolute inset-0">
             <Image
-              src="/images/hero/hero-campus.png"
+              src="/images/hero/hero-skyline.jpg"
               alt=""
               fill
               priority
               sizes="100vw"
-              className="object-cover object-[72%_100%] lg:object-[100%_100%]"
+              className="object-cover object-[78%_100%] lg:object-[100%_100%]"
             />
           </div>
-          {/* Washes: keep the left (copy) bright so ink type reads cleanly;
-              the campus and the students on the right stay vivid. */}
-          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.78)_0%,rgba(255,255,255,0.45)_40%,rgba(255,255,255,0)_62%)]" />
-          <div className="absolute inset-0 max-sm:bg-[linear-gradient(180deg,rgba(255,255,255,0.55)_0%,rgba(255,255,255,0.35)_50%,rgba(255,255,255,0.8)_100%)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.75)_0%,rgba(255,255,255,0.4)_40%,rgba(255,255,255,0)_60%)] max-lg:bg-[linear-gradient(180deg,rgba(255,255,255,0.55)_0%,rgba(255,255,255,0.45)_35%,rgba(255,255,255,0.82)_55%,rgba(255,255,255,0.9)_100%)]" />
         </div>
 
         {/* ------------------------------------------- the campus film (pill → full bleed) */}
@@ -197,7 +199,7 @@ export function Hero() {
         </div>
 
         {/* ------------------------------------------------------- act 1 */}
-        <div className="container-page relative z-10 flex h-full flex-col justify-center pb-8 pt-[96px] lg:pt-[104px]">
+        <div className="container-page relative z-10 flex h-full flex-col justify-center pb-8 pt-[80px] lg:pt-[88px]">
           {/* Real heading text for assistive tech; the visual lines are aria-hidden. */}
           <h1 className="font-display text-[min(11vw,9vh)] font-bold leading-[0.95] tracking-[-0.04em] sm:text-[min(6vw,9.5vh)]">
             <span className="sr-only">AI-First B.Tech in Computer Science</span>

@@ -4,13 +4,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { ArrowRight, ArrowUpRight, Phone } from "lucide-react";
 import { lenis } from "@/components/motion/SmoothScroll";
 import { GlowButton } from "./GlowButton";
 import { Logo } from "./Logo";
 
-gsap.registerPlugin(useGSAP);
+gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 const NAV_LINKS = [
   { label: "Home", href: "/" },
@@ -28,7 +29,9 @@ const NAV_LINKS = [
  *          is hovered (resting on Home).
  *  right   Apply Now (rotating border glow) and a Menu button.
  *
- * The bar stays pinned to the top while scrolling.
+ * The bar stays pinned to the top while scrolling. Over the hero it floats
+ * with no backing; once the hero has scrolled away it gains a white bar
+ * (blurred, hairline bottom edge) so it never sits on top of section content.
  * Menu opens a full-screen sheet: it wipes down from the top, big links rise
  * in one by one, with the campus image and admissions contact alongside.
  * Esc or Close dismisses it; smooth scroll is paused while it is open.
@@ -39,6 +42,7 @@ export function Navbar() {
   const tl = useRef<gsap.core.Timeline | null>(null);
 
   const [open, setOpen] = useState(false);
+  const [solid, setSolid] = useState(false);
   const [tab, setTab] = useState({ left: 0, width: 0, index: 0 });
 
   /* ------------------------------------------------ sliding tab in the pill */
@@ -49,6 +53,19 @@ export function Navbar() {
   useEffect(() => {
     moveTab(0);
     document.fonts?.ready.then(() => moveTab(0));
+  }, []);
+
+  /* ------------------------------------------------ white bar after the hero */
+  useEffect(() => {
+    const hero = document.querySelector("main > section");
+    if (!hero) return;
+    const trigger = ScrollTrigger.create({
+      trigger: hero,
+      start: "bottom top+=60",
+      onEnter: () => setSolid(true),
+      onLeaveBack: () => setSolid(false),
+    });
+    return () => trigger.kill();
   }, []);
 
   /* ------------------------------------------------ full-screen menu */
@@ -101,14 +118,22 @@ export function Navbar() {
   return (
     <header ref={root}>
       {/* ------------------------------------------------------------ bar */}
-      <div className="fixed inset-x-0 top-0 z-50">
-        <nav className="container-page flex h-[76px] items-center justify-between gap-4 pt-3">
+      <div
+        className={`fixed inset-x-0 top-0 z-50 border-b transition-[background-color,border-color,backdrop-filter] duration-500 ${
+          solid && !open
+            ? "border-black/[0.06] bg-white/90 backdrop-blur-xl"
+            : "border-transparent bg-transparent"
+        }`}
+      >
+        <nav className="container-page flex h-[60px] items-center justify-between gap-4">
           <Logo />
 
           <ul
             ref={pill}
             onMouseLeave={() => moveTab(0)}
-            className={`relative hidden items-center rounded-[6px] border border-white/70 bg-white/70 p-1 shadow-[var(--shadow-sm)] backdrop-blur-xl transition-opacity duration-300 lg:flex ${
+            className={`relative hidden items-center rounded-[6px] border p-1 backdrop-blur-xl transition-[opacity,background-color,border-color,box-shadow] duration-300 lg:flex ${
+              solid ? "border-transparent bg-transparent" : "border-white/70 bg-white/70 shadow-[var(--shadow-sm)]"
+            } ${
               open ? "pointer-events-none opacity-0" : "opacity-100"
             }`}
           >
@@ -116,7 +141,7 @@ export function Navbar() {
               <li key={link.href} onMouseEnter={() => moveTab(i)} className="relative z-[1]">
                 <Link
                   href={link.href}
-                  className={`block whitespace-nowrap rounded-[4px] px-4 py-2 text-[14px] font-medium transition-colors duration-300 ${
+                  className={`block whitespace-nowrap rounded-[4px] px-4 py-1.5 text-[14px] font-medium transition-colors duration-300 ${
                     tab.index === i ? "text-white" : "text-body hover:text-ink"
                   }`}
                 >
@@ -143,7 +168,7 @@ export function Navbar() {
               onClick={() => setOpen((v) => !v)}
               aria-expanded={open}
               aria-controls="site-menu"
-              className="group inline-flex h-[42px] items-center gap-3 rounded-[6px] bg-ink pl-4 pr-3.5 text-[13.5px] font-semibold text-white transition-colors hover:bg-black"
+              className="group inline-flex h-[38px] items-center gap-3 rounded-[6px] bg-ink pl-4 pr-3.5 text-[13.5px] font-semibold text-white transition-colors hover:bg-black"
             >
               <span className="relative block h-4 overflow-hidden">
                 <span

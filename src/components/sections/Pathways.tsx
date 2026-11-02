@@ -1,8 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { GlowButton } from "@/components/site/GlowButton";
 import { SectionHeading } from "@/components/site/SectionHeading";
+
+gsap.registerPlugin(ScrollTrigger);
 
 /**
  * "One Degree, Three Pathways"
@@ -21,7 +25,8 @@ import { SectionHeading } from "@/components/site/SectionHeading";
  *    i on with an elastic pop from 0.94 scale, and the whole set of circles
  *    springs to −i × 3.1° so the fan stays centred
  *  - scrolling back switches cards off again
- * Their elastic.out(0.6, 0.3) is reproduced with a CSS linear() easing.
+ * Driven by a GSAP ScrollTrigger on the track, with GSAP's own elastic.out
+ * for the pop and the fan's spring, as on the reference.
  *
  * Below 900px (and for prefers-reduced-motion) there is no pin: the cards sit
  * in a horizontal, snap-scrolling row, as on the reference.
@@ -55,19 +60,7 @@ const PATHS = [
 const STEP = 6.2; // degrees between neighbouring cards
 const RADIUS = 1837.5; // circle radius in px (3675 / 2)
 
-/** GSAP's elastic.out(amplitude 1, period 0.3) sampled into a CSS linear() */
-const ELASTIC = (() => {
-  const p = 0.3;
-  const s = p / 4;
-  const pts: string[] = [];
-  for (let i = 0; i <= 40; i++) {
-    const t = i / 40;
-    const v =
-      t === 0 ? 0 : t === 1 ? 1 : 2 ** (-10 * t) * Math.sin(((t - s) * 2 * Math.PI) / p) + 1;
-    pts.push(v.toFixed(4));
-  }
-  return `linear(${pts.join(", ")})`;
-})();
+const ELASTIC = "elastic.out(1, 0.3)";
 
 /**
  * Two-line title on two concentric upward arcs, like the reference's curved
@@ -204,52 +197,37 @@ export function Pathways() {
     if (!track || !group) return;
 
     let current = -1;
-    let frame = 0;
 
     const show = (i: number, on: boolean) => {
       const el = circleRefs.current[i];
       if (!el) return;
-      el.style.visibility = on ? "visible" : "hidden";
-      if (on) {
-        el.animate(
-          [
-            { transform: `rotate(${i * STEP}deg) scale(0.94)` },
-            { transform: `rotate(${i * STEP}deg) scale(1)` },
-          ],
-          { duration: 500, easing: ELASTIC },
-        );
-      }
+      gsap.set(el, { autoAlpha: on ? 1 : 0 });
+      if (on) gsap.fromTo(el, { scale: 0.94 }, { scale: 1, duration: 0.6, ease: ELASTIC, overwrite: true });
     };
 
-    const update = () => {
-      frame = 0;
-      const r = track.getBoundingClientRect();
-      const span = r.height - window.innerHeight;
-      const progress = -r.top / span;
+    const trigger = ScrollTrigger.create({
+      trigger: track,
+      start: "top top",
+      end: "bottom bottom",
+      onUpdate: (self) => {
+        // before the pin starts nothing is shown (their onLeaveBack)
+        const raw = self.progress <= 0 ? -1 : Math.floor(self.progress * PATHS.length);
+        const next = Math.min(raw, PATHS.length - 1);
+        if (next === current) return;
 
-      // before the pin starts nothing is shown (their onLeaveBack)
-      let next = progress < 0 ? -1 : Math.floor(progress * PATHS.length);
-      next = Math.min(next, PATHS.length - 1);
-      if (next === current) return;
+        if (next > current) for (let i = current + 1; i <= next; i++) show(i, true);
+        else for (let i = current; i > next; i--) show(i, false);
 
-      if (next > current) for (let i = current + 1; i <= next; i++) show(i, true);
-      else for (let i = current; i > next; i--) show(i, false);
-
-      group.style.transform = `rotate(${-Math.max(next, 0) * (STEP / 2)}deg)`;
-      current = next;
-    };
-
-    const schedule = () => {
-      if (!frame) frame = requestAnimationFrame(update);
-    };
-    update();
-    window.addEventListener("scroll", schedule, { passive: true });
-    window.addEventListener("resize", schedule);
-    return () => {
-      if (frame) cancelAnimationFrame(frame);
-      window.removeEventListener("scroll", schedule);
-      window.removeEventListener("resize", schedule);
-    };
+        gsap.to(group, { rotation: -Math.max(next, 0) * (STEP / 2), duration: 0.6, ease: ELASTIC, overwrite: true });
+        current = next;
+      },
+      onLeaveBack: () => {
+        for (let i = current; i >= 0; i--) show(i, false);
+        gsap.to(group, { rotation: 0, duration: 0.6, ease: ELASTIC, overwrite: true });
+        current = -1;
+      },
+    });
+    return () => trigger.kill();
   }, [pinned]);
 
   /* In the pinned frame on short screens (<820px tall) the intro line is
@@ -269,8 +247,8 @@ export function Pathways() {
       {pinned ? (
         <div ref={trackRef} style={{ height: `calc(100vh + ${PATHS.length * 40}vh)` }}>
           <div className="sticky top-0 h-screen overflow-hidden">
-            {/* starts below the fixed 76px nav */}
-            <div className="absolute inset-x-0 top-[calc(76px+2.5vh)] z-10">{heading(true)}</div>
+            {/* starts below the fixed 60px nav */}
+            <div className="absolute inset-x-0 top-[calc(60px+2.5vh)] z-10">{heading(true)}</div>
             <div className="absolute inset-x-0 bottom-[5vh] z-10 bg-canvas">
               <PathwayCta />
             </div>
@@ -281,7 +259,6 @@ export function Pathways() {
                 width: RADIUS * 2,
                 marginTop: "max(49vh, 380px)",
                 marginLeft: `calc(50vw - ${RADIUS}px)`,
-                transition: `transform 500ms ${ELASTIC}`,
               }}
             >
               {PATHS.map((path, i) => (

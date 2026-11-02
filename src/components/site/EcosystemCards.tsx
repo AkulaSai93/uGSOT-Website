@@ -156,6 +156,7 @@ export function EcosystemCards() {
         {CARDS.map((c) => (
           <li
             key={c.name}
+            data-reveal-item
             className="group absolute flex items-center justify-center hover:z-20"
             style={{
               left: cq(c.ml),

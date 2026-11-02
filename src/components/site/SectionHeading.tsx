@@ -32,6 +32,7 @@ export function SectionHeading({
   accent,
   after,
   intro,
+  breakBeforeAccent = false,
   align = "center",
   size = "lg",
   className = "",
@@ -41,6 +42,8 @@ export function SectionHeading({
   accent?: string;
   after?: string;
   intro?: ReactNode;
+  /** start the accent phrase on its own line */
+  breakBeforeAccent?: boolean;
   align?: "center" | "left";
   size?: keyof typeof SIZE;
   className?: string;
@@ -105,6 +108,7 @@ export function SectionHeading({
         </span>
         <span aria-hidden className={`flex flex-wrap gap-x-[0.24em] ${centred ? "justify-center" : ""}`}>
           {words(title, false)}
+          {breakBeforeAccent && <span aria-hidden className="h-0 basis-full" />}
           {words(accent, true)}
           {words(after, false)}
         </span>

@@ -2,7 +2,12 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
 import { SectionHeading } from "@/components/site/SectionHeading";
+
+gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 /**
  * "Build Industry-Preferred Skills Through Practical Learning"
@@ -18,7 +23,8 @@ import { SectionHeading } from "@/components/site/SectionHeading";
  *    the active year's title, a project carousel and skill chips
  *
  * The active year is whichever block's top has crossed 45% of the viewport,
- * tracked by one rAF-throttled scroll handler. Below lg the panel is not
+ * tracked by one GSAP ScrollTrigger per block; the sticky panel cross-fades
+ * to the new year with a GSAP tween. Below lg the panel is not
  * sticky: each year renders its own panel inline under its block.
  *
  * Type, corners and heading follow the site-wide section style.
@@ -429,45 +435,56 @@ export function Curriculum() {
   const blockRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [active, setActive] = useState(0);
   const stickyRef = useRef<HTMLDivElement | null>(null);
+  const panelRef = useRef<HTMLDivElement | null>(null);
 
+  // active year: one ScrollTrigger per block, firing as its top crosses 45%
   useEffect(() => {
-    let frame = 0;
-    const update = () => {
-      frame = 0;
-      const line = window.innerHeight * 0.45;
-      let next = 0;
-      blockRefs.current.forEach((el, i) => {
-        if (el && el.getBoundingClientRect().top <= line) next = i;
-      });
-      setActive(next);
-
-      // On short windows the panel can be taller than the space under the
-      // navbar; pin it higher so its bottom edge stays on screen.
-      const panel = stickyRef.current;
-      if (panel) {
-        const top = Math.min(100, window.innerHeight - panel.offsetHeight - 16);
-        panel.style.top = `${top}px`;
-      }
-    };
-    const schedule = () => {
-      if (!frame) frame = requestAnimationFrame(update);
-    };
-    update();
-    window.addEventListener("scroll", schedule, { passive: true });
-    window.addEventListener("resize", schedule);
-    return () => {
-      if (frame) cancelAnimationFrame(frame);
-      window.removeEventListener("scroll", schedule);
-      window.removeEventListener("resize", schedule);
-    };
+    const triggers = blockRefs.current.map((el, i) =>
+      el
+        ? ScrollTrigger.create({
+            trigger: el,
+            start: "top 45%",
+            onEnter: () => setActive(i),
+            onLeaveBack: () => setActive(Math.max(i - 1, 0)),
+          })
+        : null,
+    );
+    return () => triggers.forEach((t) => t?.kill());
   }, []);
+
+  // On short windows the panel can be taller than the space under the navbar;
+  // pin it higher so its bottom edge stays on screen.
+  useEffect(() => {
+    const place = () => {
+      const panel = stickyRef.current;
+      if (!panel) return;
+      panel.style.top = `${Math.min(84, window.innerHeight - panel.offsetHeight - 16)}px`;
+    };
+    place();
+    window.addEventListener("resize", place);
+    return () => window.removeEventListener("resize", place);
+  }, [active]);
+
+  // panel swap: the new year's panel rises in
+  useGSAP(
+    () => {
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      gsap.fromTo(
+        panelRef.current,
+        { y: 16, autoAlpha: 0 },
+        { y: 0, autoAlpha: 1, duration: 0.6, ease: "expo.out" },
+      );
+    },
+    { dependencies: [active] },
+  );
 
   return (
     <section id="curriculum" className="bg-canvas py-20 lg:py-28">
       <div className="container-page">
         <SectionHeading
-          title="Build Industry-Preferred Skills Through"
+          title="Build Industry Preferred Skills Through"
           accent="Practical Learning"
+          breakBeforeAccent
           intro="A structured learning journey designed with input from industry experts."
         />
 
@@ -540,15 +557,15 @@ export function Curriculum() {
 
           {/* Right: sticky detail panel (Scaler) */}
           <div className="hidden lg:block">
-            <div ref={stickyRef} className="sticky top-[100px]">
-              <div key={YEARS[active].key} className="animate-[curriculum-in_400ms_ease-out]">
-                <YearPanel year={YEARS[active]} index={active} />
+            <div ref={stickyRef} className="sticky top-[84px]">
+              <div ref={panelRef}>
+                {/* keyed so each year's carousel starts at its first project */}
+                <YearPanel key={YEARS[active].key} year={YEARS[active]} index={active} />
               </div>
             </div>
           </div>
         </div>
       </div>
-      <style>{`@keyframes curriculum-in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}`}</style>
     </section>
   );
 }

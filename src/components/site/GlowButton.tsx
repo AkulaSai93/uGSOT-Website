@@ -43,7 +43,7 @@ export function GlowButton({
       />
       <span
         className={`relative z-[2] inline-flex items-center gap-2 whitespace-nowrap rounded-[5px] bg-accent font-semibold ${
-          size === "sm" ? "px-4 py-2.5 text-[13.5px]" : "px-6 py-3.5 text-[15px]"
+          size === "sm" ? "px-4 py-2 text-[13.5px]" : "px-6 py-3.5 text-[15px]"
         } text-white transition-colors group-hover:bg-accent-hover`}
       >
         {children}

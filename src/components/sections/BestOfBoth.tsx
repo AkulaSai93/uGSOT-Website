@@ -2,8 +2,12 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Reveal } from "@/components/motion/Reveal";
 import { SectionHeading } from "@/components/site/SectionHeading";
+
+gsap.registerPlugin(ScrollTrigger);
 
 /**
  * "Where World-Class University Meets Silicon Valley Learning"
@@ -14,7 +18,8 @@ import { SectionHeading } from "@/components/site/SectionHeading";
  * narrows to nothing — so the two halves close into a single line. The ten
  * feature cards then reveal below.
  *
- * Progress is one rAF-throttled handler writing two CSS custom properties:
+ * Progress comes from a GSAP ScrollTrigger (scrub 0.8, so it glides behind the
+ * Lenis smooth scroll rather than snapping to it) writing CSS custom properties:
  *   --a      headline converge + media narrow
  *   --lift   headline travels to the top of the frame
  *   --cards  panels fade up underneath it
@@ -281,44 +286,32 @@ export function BestOfBoth() {
     };
   }, []);
 
-  // scroll -> --a (converge) and --b (reveal)
+  // scroll -> --a (converge), --lift (rise), --cards (reveal), via ScrollTrigger
   useEffect(() => {
     if (!animated) return;
-    let frame = 0;
+    const track = trackRef.current;
+    const stage = stageRef.current;
+    if (!track || !stage) return;
 
-    const update = () => {
-      frame = 0;
-      const track = trackRef.current;
-      const stage = stageRef.current;
-      if (!track || !stage) return;
-
-      const r = track.getBoundingClientRect();
-      const travel = r.height - window.innerHeight;
-      const p = travel > 0 ? clamp(-r.top / travel, 0, 1) : 0;
-
-      // Three phases, strictly in order, so nothing overlaps:
-      //   --a     0.00 -> 0.55  video narrows, headline halves close
-      //   --lift  0.55 -> 0.74  headline travels to the top of the frame
-      //   --cards 0.78 -> 0.95  panels fade up underneath it
-      stage.style.setProperty("--a", String(clamp(p / 0.55, 0, 1)));
-      stage.style.setProperty("--lift", String(clamp((p - 0.55) / 0.19, 0, 1)));
-      stage.style.setProperty(
-        "--cards",
-        String(clamp((p - 0.78) / 0.17, 0, 1)),
-      );
-    };
-
-    const schedule = () => {
-      if (!frame) frame = requestAnimationFrame(update);
-    };
-
-    update();
-    window.addEventListener("scroll", schedule, { passive: true });
-    window.addEventListener("resize", schedule);
+    const progress = { p: 0 };
+    const tween = gsap.to(progress, {
+      p: 1,
+      ease: "none",
+      scrollTrigger: { trigger: track, start: "top top", end: "bottom bottom", scrub: 0.8 },
+      onUpdate: () => {
+        const p = progress.p;
+        // Three phases, strictly in order, so nothing overlaps:
+        //   --a     0.00 -> 0.55  video narrows, headline halves close
+        //   --lift  0.55 -> 0.74  headline travels to the top of the frame
+        //   --cards 0.78 -> 0.95  panels fade up underneath it
+        stage.style.setProperty("--a", String(clamp(p / 0.55, 0, 1)));
+        stage.style.setProperty("--lift", String(clamp((p - 0.55) / 0.19, 0, 1)));
+        stage.style.setProperty("--cards", String(clamp((p - 0.78) / 0.17, 0, 1)));
+      },
+    });
     return () => {
-      if (frame) cancelAnimationFrame(frame);
-      window.removeEventListener("scroll", schedule);
-      window.removeEventListener("resize", schedule);
+      tween.scrollTrigger?.kill();
+      tween.kill();
     };
   }, [animated]);
 

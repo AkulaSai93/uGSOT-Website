@@ -28,24 +28,23 @@ export function Legacy() {
           intro="A legacy of 10+ years in higher education, driving learning, hiring, and career success."
         />
 
-        <Reveal className="w-full">
+        {/* the six cards drop in one after another */}
+        <Reveal className="w-full" stagger={0.09} y={48}>
           <EcosystemCards />
         </Reveal>
 
-        {/* Wrapping grid below xl; at xl a single row of hairline-divided
-            columns, each sized to its own label. */}
+        {/* Wrapping grid below xl; at xl a single row of columns, each sized
+            to its own label. */}
         <Reveal
           as="dl"
           stagger={0.06}
-          className="grid w-full grid-cols-2 gap-y-10 border-t border-ink/10 pt-10 sm:grid-cols-3 md:grid-cols-4 xl:flex xl:items-start xl:justify-between xl:gap-y-0"
+          className="grid w-full grid-cols-2 gap-y-10 pt-4 sm:grid-cols-3 md:grid-cols-4 xl:flex xl:items-start xl:justify-between xl:gap-y-0"
         >
-          {STATS.map((stat, i) => (
+          {STATS.map((stat) => (
             <div
               key={stat.label}
               data-reveal-item
-              className={`flex flex-col gap-2 px-4 text-center xl:flex-1 xl:px-3 ${
-                i > 0 ? "xl:border-l xl:border-ink/10" : ""
-              }`}
+              className="flex flex-col gap-2 px-4 text-center xl:flex-1 xl:px-3"
             >
               <dd className="m-0 font-display text-[clamp(1.375rem,1.9vw,1.75rem)] font-bold leading-none tracking-[-0.02em] text-ink">
                 <CountUp value={stat.value} />
