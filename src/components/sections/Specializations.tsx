@@ -30,8 +30,13 @@ gsap.registerPlugin(useGSAP);
  * has four; this shows all six at once and needs no scroll hijack.
  *
  * Motion is all GSAP: panel width (flex-grow) or height, image settle, and the
- * title/line hand-off run as tweens with overwrite:"auto", so sweeping the
- * mouse across the strips retargets smoothly mid-flight instead of snapping.
+ * title/line hand-off. The tweens on a panel's inner parts use overwrite:true,
+ * which also cancels tweens still waiting on a delay — with "auto" a delayed
+ * fade queued by an earlier hover could fire later and leave a closed strip
+ * showing its title, or an open one its spine label. The size tween on the
+ * panel itself must stay overwrite:"auto" (only its own properties): the panel
+ * also carries the section's scroll-in reveal (opacity/y), and overwrite:true
+ * would kill that reveal and leave the strips faded out.
  * Hover waits a beat (70ms) before switching, so a quick pass doesn't flicker.
  */
 const SPECIALIZATIONS = [
@@ -148,7 +153,9 @@ function Panel({
       {/* open: title and line rise in once the panel has widened */}
       <div
         data-open
-        className={`absolute inset-x-0 bottom-0 p-6 lg:p-8 ${active ? "" : "invisible opacity-0"}`}
+        // fixed width on desktop: the copy is clipped while the strip widens
+        // rather than re-wrapping word by word into a narrow column
+        className={`absolute bottom-0 left-0 p-6 max-lg:right-0 lg:w-[600px] lg:p-8 ${active ? "" : "invisible opacity-0"}`}
       >
         <h3 className="max-w-[520px] font-display text-[clamp(1.375rem,2vw,1.875rem)] font-bold leading-tight tracking-[-0.02em] text-white">
           {spec.title}
@@ -198,21 +205,21 @@ export function Specializations() {
           opacity: on ? 1 : 0.55,
           duration: 1.4 * t,
           ease: "expo.out",
-          overwrite: "auto",
+          overwrite: true,
         });
         gsap.to(q("[data-closed]"), {
           autoAlpha: on ? 0 : 1,
           duration: (on ? 0.2 : 0.5) * t,
           delay: on ? 0 : 0.35 * t,
           ease: "power2.out",
-          overwrite: "auto",
+          overwrite: true,
         });
-        gsap.to(q("[data-total]"), { autoAlpha: on ? 1 : 0, duration: 0.4 * t, overwrite: "auto" });
+        gsap.to(q("[data-total]"), { autoAlpha: on ? 1 : 0, duration: 0.4 * t, overwrite: true });
         gsap.to(
           q("[data-open]"),
           on
-            ? { autoAlpha: 1, y: 0, duration: 0.9 * t, delay: 0.3 * t, ease: "expo.out", overwrite: "auto" }
-            : { autoAlpha: 0, y: 24, duration: 0.25 * t, ease: "power2.out", overwrite: "auto" },
+            ? { autoAlpha: 1, y: 0, duration: 0.9 * t, delay: 0.3 * t, ease: "expo.out", overwrite: true }
+            : { autoAlpha: 0, y: 24, duration: 0.25 * t, ease: "power2.out", overwrite: true },
         );
       });
     },

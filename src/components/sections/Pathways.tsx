@@ -204,24 +204,34 @@ export function Pathways() {
   const sectionRef = useRef<HTMLElement | null>(null);
   const cardsRef = useRef<HTMLDivElement | null>(null);
 
-  // timed fade to black while the section holds the middle of the screen
+  // timed fade to black while the section holds the middle of the screen.
+  // Checked from the live position on each scroll (same rule as the nav), so
+  // it stays right when the section changes height between layouts.
   useEffect(() => {
     const section = sectionRef.current;
     if (!section) return;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const trigger = ScrollTrigger.create({
-      trigger: section,
-      start: "top 55%",
-      end: "bottom 45%",
-      onToggle: (self) =>
-        gsap.to(section, {
-          ...(self.isActive ? DARK : LIGHT),
-          duration: reduced ? 0 : 0.7,
-          ease: "power2.inOut",
-          overwrite: true,
-        }),
-    });
-    return () => trigger.kill();
+    let dark: boolean | null = null;
+    const check = () => {
+      const r = section.getBoundingClientRect();
+      const h = window.innerHeight;
+      const next = r.top < h * 0.55 && r.bottom > h * 0.45;
+      if (next === dark) return;
+      dark = next;
+      gsap.to(section, {
+        ...(next ? DARK : LIGHT),
+        duration: reduced ? 0 : 0.7,
+        ease: "power2.inOut",
+        overwrite: true,
+      });
+    };
+    check();
+    window.addEventListener("scroll", check, { passive: true });
+    window.addEventListener("resize", check);
+    return () => {
+      window.removeEventListener("scroll", check);
+      window.removeEventListener("resize", check);
+    };
   }, []);
 
   // pinned scroll steps on desktop; plain swipe row otherwise

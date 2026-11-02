@@ -6,6 +6,8 @@ import { BuiltDifferent } from "@/components/sections/BuiltDifferent";
 import { Specializations } from "@/components/sections/Specializations";
 import { Curriculum } from "@/components/sections/Curriculum";
 import { Pathways } from "@/components/sections/Pathways";
+import { Campuses } from "@/components/sections/Campuses";
+import { Leaders } from "@/components/sections/Leaders";
 
 export default function Home() {
   return (
@@ -19,6 +21,8 @@ export default function Home() {
         <Specializations />
         <Curriculum />
         <Pathways />
+        <Campuses />
+        <Leaders />
       </main>
     </>
   );

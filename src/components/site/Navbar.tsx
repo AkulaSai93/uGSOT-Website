@@ -13,6 +13,9 @@ import { Logo } from "./Logo";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
+/** sections with a black background: the nav switches to its dark style over them */
+const DARK_SECTIONS = ["pathways", "leaders"];
+
 const NAV_LINKS = [
   { label: "Home", href: "/" },
   { label: "Campuses", href: "#campuses" },
@@ -32,7 +35,7 @@ const NAV_LINKS = [
  * The bar stays pinned to the top while scrolling. Over the hero it floats
  * with no backing; once the hero has scrolled away it gains a white bar
  * (blurred, hairline bottom edge) so it never sits on top of section content.
- * Over the dark Pathways section it switches to a dark bar (white logo and
+ * Over the dark sections (Pathways, Leaders) it switches to a dark bar (white logo and
  * links, white tab and Menu button), as makro.framer.website does.
  * Menu opens a full-screen sheet: it wipes down from the top, big links rise
  * in one by one, with the campus image and admissions contact alongside.
@@ -54,8 +57,12 @@ export function Navbar() {
     if (li) setTab({ left: li.offsetLeft, width: li.offsetWidth, index });
   };
   useEffect(() => {
-    moveTab(0);
-    document.fonts?.ready.then(() => moveTab(0));
+    const reset = () => moveTab(0);
+    reset();
+    document.fonts?.ready.then(reset);
+    // the pill is display:none below lg, so re-measure when it appears
+    window.addEventListener("resize", reset);
+    return () => window.removeEventListener("resize", reset);
   }, []);
 
   /* ------------------------------------------------ white bar after the hero */
@@ -71,17 +78,27 @@ export function Navbar() {
     return () => trigger.kill();
   }, []);
 
-  /* ------------------------------------------------ dark bar over Pathways */
+  /* ------------------------------------------------ dark bar over dark sections */
+  // Read from the section's live position on every scroll rather than from
+  // precomputed trigger offsets: Pathways changes height when it switches
+  // between its pinned and plain layouts, which would leave offsets stale.
   useEffect(() => {
-    const section = document.getElementById("pathways");
-    if (!section) return;
-    const trigger = ScrollTrigger.create({
-      trigger: section,
-      start: "top 55%",
-      end: "bottom 45%",
-      onToggle: (self) => setDark(self.isActive),
-    });
-    return () => trigger.kill();
+    const check = () => {
+      const h = window.innerHeight;
+      setDark(
+        DARK_SECTIONS.some((id) => {
+          const r = document.getElementById(id)?.getBoundingClientRect();
+          return !!r && r.top < h * 0.55 && r.bottom > h * 0.45;
+        }),
+      );
+    };
+    check();
+    window.addEventListener("scroll", check, { passive: true });
+    window.addEventListener("resize", check);
+    return () => {
+      window.removeEventListener("scroll", check);
+      window.removeEventListener("resize", check);
+    };
   }, []);
 
   /* ------------------------------------------------ full-screen menu */
