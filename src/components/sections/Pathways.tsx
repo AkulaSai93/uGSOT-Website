@@ -12,55 +12,48 @@ gsap.registerPlugin(ScrollTrigger);
  * "One Degree, Three Pathways"
  *
  * Titles are sot.upgrad.com's (the curved art uses a two-short-line cut of
- * each, the full title stays in the heading for screen readers); descriptions are shortened so they can be set
- * large, as on the reference card.
+ * each, the full title stays in the heading for screen readers); descriptions
+ * are shortened so they can be set large.
  *
- * Motion is a port of the fanned-cards section on madewithgsap.com (their
- * app2.js, `.h-cards`):
- *  - a full-screen stage is pinned for 40vh of scroll per card (shorter than
- *    the reference's full viewport, so the cards arrive sooner)
- *  - each card sits at the top of its own 3675px circle; circle i is rotated
- *    i × 6.2°, so the cards fan out along a shallow arc
- *  - scroll progress is split into equal steps; entering step i switches card
- *    i on with an elastic pop from 0.94 scale, and the whole set of circles
- *    springs to −i × 3.1° so the fan stays centred
- *  - scrolling back switches cards off again
- * Driven by a GSAP ScrollTrigger on the track, with GSAP's own elastic.out
- * for the pop and the fan's spring, as on the reference.
+ * Dark scene, after makro.framer.website: when the section reaches the middle
+ * of the screen the whole section fades to black in one timed GSAP tween (not
+ * scrubbed, so there is no muddy grey half-state), and fades back to white
+ * when you scroll out above it. The nav switches to its dark style over the
+ * same stretch (see Navbar). Colours live in --pw-* tokens on the section;
+ * the shared heading reads them through --heading-fg / --heading-muted.
  *
- * Below 900px (and for prefers-reduced-motion) there is no pin: the cards sit
- * in a horizontal, snap-scrolling row, as on the reference.
+ * Cards: three in a clean row, all fully visible. Black face inside a 1px
+ * silver sheen border (the ConsultTitans service cards), white type, soft
+ * white glow at the top — no red. On hover the border's light streaks slide
+ * round the edge (gradient angle 124° → 172°, GSAP), as on the reference.
  *
- * Heading, CTA type and button follow the site-wide section style.
+ * Entrance (desktop, ported from the madewithgsap.com fanned cards): the
+ * section pins for 40vh of scroll per card; each scroll step brings the next
+ * card in — up from below, tilted, blurred, with an elastic pop from 0.94 —
+ * landing level in its slot in the row. Scrolling back takes them out again.
+ * Below 901px and for reduced motion there is no pin: the cards are a swipe
+ * row that rises in once.
  */
 const PATHS = [
   {
     n: "01",
-    title: "High-Paying Job Opportunities",
-    lines: ["High-Paying", "Jobs"],
+    title: "High Paying Job Opportunities",
+    lines: ["High Paying", "Jobs"],
     body: "Get industry-ready with hands-on coding, hackathons and strong placement support.",
-    red: true,
   },
   {
     n: "02",
     title: "Startup Support",
     lines: ["Startup", "Support"],
     body: "Launch your startup while you study, with mentorship, incubation and seed funding.",
-    red: false,
   },
   {
     n: "03",
     title: "Research & Higher Studies",
     lines: ["Research &", "Studies"],
     body: "Build research skills and prepare for GRE, IELTS and top global universities.",
-    red: true,
   },
 ] as const;
-
-const STEP = 6.2; // degrees between neighbouring cards
-const RADIUS = 1837.5; // circle radius in px (3675 / 2)
-
-const ELASTIC = "elastic.out(1, 0.3)";
 
 /**
  * Two-line title on two concentric upward arcs, like the reference's curved
@@ -111,72 +104,129 @@ function ArcTitle({ lines, id, light }: { lines: readonly string[]; id: string; 
   );
 }
 
+/** Silver sheen border from the reference cards. Its angle lives in
+ *  --sheen (degrees) so hover can swing it, as the reference does: 124° at
+ *  rest, 172° on hover — the bright streaks slide round the edge. */
+const SHEEN =
+  "linear-gradient(calc(var(--sheen) * 1deg), rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.4) 23.5%, rgba(255,255,255,0) 36%, rgba(255,255,255,0.8) 53%, rgba(255,255,255,0.1) 78%, rgba(255,255,255,0.1) 100%)";
+const SHEEN_REST = 124;
+const SHEEN_HOVER = 172;
+
 function Card({ path }: { path: (typeof PATHS)[number] }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const swing = (to: number) =>
+    gsap.to(ref.current, { "--sheen": to, duration: 0.7, ease: "power3.out", overwrite: "auto" });
+
   return (
     <div
-      className={`relative mx-auto flex aspect-[0.85] w-full max-w-[338px] flex-col justify-between rounded-[6px] py-10 text-center ${
-        path.red ? "text-white" : "border border-[#0a0a0b] bg-white text-[#0a0a0b]"
-      }`}
-      // brand red gradient from sot.upgrad.com/catalyst
-      style={
-        path.red
-          ? { backgroundImage: "linear-gradient(147deg, #ee1a24 0%, #e6161f 40%, #b90c14 100%)" }
-          : undefined
-      }
+      ref={ref}
+      data-path-card
+      onMouseEnter={() => swing(SHEEN_HOVER)}
+      onMouseLeave={() => swing(SHEEN_REST)}
+      className="group relative mx-auto aspect-[0.85] w-full max-w-[360px] rounded-[6px] p-px transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-2"
+      style={{ "--sheen": SHEEN_REST, backgroundImage: SHEEN } as React.CSSProperties}
     >
-      <ArcTitle lines={path.lines} id={`path-${path.n}`} light={path.red} />
-      <span
-        aria-hidden
-        className={`pointer-events-none absolute inset-x-0 top-[52%] -translate-y-1/2 text-[130px] font-medium leading-none ${path.red ? "opacity-25" : "opacity-15"}`}
-      >
-        {Number(path.n)}
-      </span>
-      <div className="px-[10%]">
-        <h3 className="sr-only">{path.title}</h3>
-        <p className="text-[17px] font-medium leading-[1.45]">{path.body}</p>
+      <div className="relative flex h-full flex-col justify-between overflow-hidden rounded-[5px] bg-[#0b0b0c] py-10 text-center text-white">
+        {/* soft white glow at the top, brighter on hover */}
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-0 opacity-70 transition-opacity duration-500 group-hover:opacity-100"
+          style={{
+            backgroundImage:
+              "radial-gradient(80% 55% at 50% 0%, rgba(255,255,255,0.14), transparent 72%)",
+          }}
+        />
+        <div className="relative">
+          <ArcTitle lines={path.lines} id={`path-${path.n}`} light />
+        </div>
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-[52%] -translate-y-1/2 text-[130px] font-medium leading-none text-white/10"
+        >
+          {Number(path.n)}
+        </span>
+        <div className="relative px-[10%]">
+          <h3 className="sr-only">{path.title}</h3>
+          <p className="text-[16px] font-medium leading-[1.45] text-white/75">{path.body}</p>
+        </div>
       </div>
     </div>
   );
 }
 
-/** Closing call to action, part of the pinned frame (sot.upgrad.com copy) */
+/** Closing call to action (sot.upgrad.com copy) */
 function PathwayCta() {
   return (
-    <div className="container-page">
-    <div className="flex flex-col items-center gap-5 border-t border-black/10 pt-5 text-center md:flex-row md:justify-between md:text-left">
+    <div className="flex flex-col items-center gap-5 border-t border-[color:var(--pw-line)] pt-6 text-center md:flex-row md:justify-between md:text-left">
       <div>
-        <h3 className="font-display text-[20px] font-bold leading-tight tracking-[-0.02em] text-ink">
+        <h3 className="font-display text-[20px] font-bold leading-tight tracking-[-0.02em] text-[color:var(--pw-fg)]">
           Ready to choose your{" "}
           <span className="font-[family-name:var(--font-bricolage)] font-semibold text-accent">
             pathway?
           </span>
         </h3>
-        <p className="mt-1.5 text-[14px] leading-relaxed text-body">
+        <p className="mt-1.5 text-[14px] leading-relaxed text-[color:var(--pw-muted)]">
           Take uGNET to unlock a tech career, startup support, or higher studies
           &mdash; all through one degree.
         </p>
-        <p className="mt-1 text-[13px] font-medium text-muted">
+        <p className="mt-1 text-[13px] font-medium text-[color:var(--pw-muted)] opacity-80">
           3 career pathways <span aria-hidden>&middot;</span> uGNET scholarship test{" "}
           <span aria-hidden>&middot;</span> 4-year B.Tech in CS
         </p>
       </div>
-      <GlowButton href="#apply" streak="#0b0d12" className="shrink-0">
+      <GlowButton href="#apply" className="shrink-0">
         Apply Now
         <svg viewBox="0 0 16 16" className="size-4" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
           <path d="M3 8h10M9 4l4 4-4 4" />
         </svg>
       </GlowButton>
     </div>
-    </div>
   );
 }
 
-export function Pathways() {
-  const trackRef = useRef<HTMLDivElement | null>(null);
-  const circlesRef = useRef<HTMLDivElement | null>(null);
-  const circleRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const [pinned, setPinned] = useState(false);
+const ELASTIC = "elastic.out(1, 0.3)";
+const SCROLL_PER_CARD_VH = 40;
 
+const LIGHT = {
+  "--pw-bg": "#ffffff",
+  "--pw-fg": "#0b0d12",
+  "--pw-muted": "#3d4452",
+  "--pw-line": "rgba(11,13,18,0.1)",
+};
+const DARK = {
+  "--pw-bg": "#000000",
+  "--pw-fg": "#ffffff",
+  "--pw-muted": "rgba(255,255,255,0.65)",
+  "--pw-line": "rgba(255,255,255,0.14)",
+};
+
+export function Pathways() {
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const cardsRef = useRef<HTMLDivElement | null>(null);
+
+  // timed fade to black while the section holds the middle of the screen
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const trigger = ScrollTrigger.create({
+      trigger: section,
+      start: "top 55%",
+      end: "bottom 45%",
+      onToggle: (self) =>
+        gsap.to(section, {
+          ...(self.isActive ? DARK : LIGHT),
+          duration: reduced ? 0 : 0.7,
+          ease: "power2.inOut",
+          overwrite: true,
+        }),
+    });
+    return () => trigger.kill();
+  }, []);
+
+  // pinned scroll steps on desktop; plain swipe row otherwise
+  const [pinned, setPinned] = useState(false);
+  const trackRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     const desktop = window.matchMedia("(min-width: 901px)");
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -190,19 +240,45 @@ export function Pathways() {
     };
   }, []);
 
+  // desktop: each scroll step pops the next card into its slot
   useEffect(() => {
     if (!pinned) return;
     const track = trackRef.current;
-    const group = circlesRef.current;
-    if (!track || !group) return;
+    const grid = cardsRef.current;
+    if (!track || !grid) return;
+    const cards = gsap.utils.toArray<HTMLElement>("[data-path-card]", grid);
+    gsap.set(cards, { autoAlpha: 0 });
 
     let current = -1;
-
     const show = (i: number, on: boolean) => {
-      const el = circleRefs.current[i];
+      const el = cards[i];
       if (!el) return;
-      gsap.set(el, { autoAlpha: on ? 1 : 0 });
-      if (on) gsap.fromTo(el, { scale: 0.94 }, { scale: 1, duration: 0.6, ease: ELASTIC, overwrite: true });
+      if (on) {
+        gsap.fromTo(
+          el,
+          { autoAlpha: 0, y: 90, rotation: (i - 1) * 6, scale: 0.94, filter: "blur(12px)" },
+          {
+            autoAlpha: 1,
+            y: 0,
+            rotation: 0,
+            filter: "blur(0px)",
+            duration: 0.8,
+            ease: "expo.out",
+            overwrite: true,
+          },
+        );
+        gsap.to(el, { scale: 1, duration: 0.7, ease: ELASTIC });
+      } else {
+        gsap.to(el, {
+          autoAlpha: 0,
+          y: 60,
+          scale: 0.96,
+          filter: "blur(8px)",
+          duration: 0.35,
+          ease: "power2.in",
+          overwrite: true,
+        });
+      }
     };
 
     const trigger = ScrollTrigger.create({
@@ -210,85 +286,120 @@ export function Pathways() {
       start: "top top",
       end: "bottom bottom",
       onUpdate: (self) => {
-        // before the pin starts nothing is shown (their onLeaveBack)
+        // nothing before the pin starts; one more card per equal step after
         const raw = self.progress <= 0 ? -1 : Math.floor(self.progress * PATHS.length);
         const next = Math.min(raw, PATHS.length - 1);
         if (next === current) return;
-
         if (next > current) for (let i = current + 1; i <= next; i++) show(i, true);
         else for (let i = current; i > next; i--) show(i, false);
-
-        gsap.to(group, { rotation: -Math.max(next, 0) * (STEP / 2), duration: 0.6, ease: ELASTIC, overwrite: true });
         current = next;
       },
       onLeaveBack: () => {
         for (let i = current; i >= 0; i--) show(i, false);
-        gsap.to(group, { rotation: 0, duration: 0.6, ease: ELASTIC, overwrite: true });
         current = -1;
       },
     });
-    return () => trigger.kill();
+    return () => {
+      trigger.kill();
+      gsap.set(cards, { clearProps: "all" });
+    };
   }, [pinned]);
 
-  /* In the pinned frame on short screens (<820px tall) the intro line is
-     dropped so the fanned cards never ride up over the heading. */
-  const heading = (pinnedFrame: boolean) => (
+  // phones / reduced motion: the row rises in once
+  useEffect(() => {
+    if (pinned) return;
+    const grid = cardsRef.current;
+    if (!grid || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const tween = gsap.fromTo(
+      grid.querySelectorAll("[data-path-card]"),
+      { y: 60, autoAlpha: 0, filter: "blur(10px)" },
+      {
+        y: 0,
+        autoAlpha: 1,
+        filter: "blur(0px)",
+        duration: 1,
+        ease: "expo.out",
+        stagger: 0.1,
+        clearProps: "filter",
+        scrollTrigger: { trigger: grid, start: "top 85%", once: true },
+      },
+    );
+    return () => {
+      tween.scrollTrigger?.kill();
+      tween.kill();
+    };
+  }, [pinned]);
+
+  // The pinned layout makes the section much taller than the first render, so
+  // every trigger on the page (the dark fade, the nav, sections below) must
+  // re-measure once it is in place. Declared last so it runs after the rest.
+  useEffect(() => {
+    ScrollTrigger.refresh();
+  }, [pinned]);
+
+  const heading = (
     <SectionHeading
       title="One Degree,"
       accent="Three Pathways"
       intro="A successful tech career, your own startup, or pursue higher education."
-      size="md"
-      className={`px-6 ${pinnedFrame ? "[@media(max-height:820px)]:[&_p]:hidden" : ""}`}
+      size={pinned ? "md" : "lg"}
+      className={pinned ? "[@media(max-height:820px)]:[&_p]:hidden" : ""}
     />
   );
 
+  const row = (
+    <div
+      ref={cardsRef}
+      className={
+        pinned
+          ? "grid grid-cols-3 justify-items-center gap-6"
+          : "-mx-5 mt-14 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-2 [scrollbar-width:none]"
+      }
+    >
+      {PATHS.map((path) => (
+        <div
+          key={path.n}
+          className={
+            pinned
+              ? // sized so heading + cards + CTA fit one screen, even short ones
+                "w-full max-w-[min(360px,calc((100svh-330px)*0.85))]"
+              : "w-[78vw] max-w-[360px] shrink-0 snap-center"
+          }
+        >
+          <Card path={path} />
+        </div>
+      ))}
+    </div>
+  );
+
   return (
-    <section id="pathways" className="bg-canvas">
+    <section
+      ref={sectionRef}
+      id="pathways"
+      className="bg-[var(--pw-bg)]"
+      style={
+        {
+          ...LIGHT,
+          "--heading-fg": "var(--pw-fg)",
+          "--heading-muted": "var(--pw-muted)",
+        } as React.CSSProperties
+      }
+    >
       {pinned ? (
-        <div ref={trackRef} style={{ height: `calc(100vh + ${PATHS.length * 40}vh)` }}>
-          <div className="sticky top-0 h-screen overflow-hidden">
-            {/* starts below the fixed 60px nav */}
-            <div className="absolute inset-x-0 top-[calc(60px+2.5vh)] z-10">{heading(true)}</div>
-            <div className="absolute inset-x-0 bottom-[5vh] z-10 bg-canvas">
+        <div ref={trackRef} style={{ height: `calc(100vh + ${PATHS.length * SCROLL_PER_CARD_VH}vh)` }}>
+          <div className="sticky top-0 flex h-screen flex-col justify-center gap-[clamp(1.25rem,3.5vh,2.5rem)] overflow-hidden pt-[60px]">
+            <div className="container-page">{heading}</div>
+            <div className="container-page">{row}</div>
+            <div className="container-page">
               <PathwayCta />
-            </div>
-            <div
-              ref={circlesRef}
-              className="relative aspect-square"
-              style={{
-                width: RADIUS * 2,
-                marginTop: "max(49vh, 380px)",
-                marginLeft: `calc(50vw - ${RADIUS}px)`,
-              }}
-            >
-              {PATHS.map((path, i) => (
-                <div
-                  key={path.n}
-                  ref={(el) => {
-                    circleRefs.current[i] = el;
-                  }}
-                  className="absolute inset-0"
-                  style={{ visibility: "hidden", transform: `rotate(${i * STEP}deg)` }}
-                >
-                  <div style={{ transform: "translateY(-54%)" }}>
-                    <Card path={path} />
-                  </div>
-                </div>
-              ))}
             </div>
           </div>
         </div>
       ) : (
-        <div className="pt-20">
-          {heading(false)}
-          <div className="mt-10 flex snap-x snap-mandatory gap-4 overflow-x-auto px-6 [scrollbar-width:none]">
-            {PATHS.map((path) => (
-              <div key={path.n} className="w-[80vw] max-w-[338px] shrink-0 snap-center">
-                <Card path={path} />
-              </div>
-            ))}
-          </div>
-          <div className="mt-10 pb-20">
+        <div className="container-page py-20">
+          {heading}
+          {row}
+          <div className="mt-16">
             <PathwayCta />
           </div>
         </div>

@@ -32,6 +32,8 @@ const NAV_LINKS = [
  * The bar stays pinned to the top while scrolling. Over the hero it floats
  * with no backing; once the hero has scrolled away it gains a white bar
  * (blurred, hairline bottom edge) so it never sits on top of section content.
+ * Over the dark Pathways section it switches to a dark bar (white logo and
+ * links, white tab and Menu button), as makro.framer.website does.
  * Menu opens a full-screen sheet: it wipes down from the top, big links rise
  * in one by one, with the campus image and admissions contact alongside.
  * Esc or Close dismisses it; smooth scroll is paused while it is open.
@@ -43,6 +45,7 @@ export function Navbar() {
 
   const [open, setOpen] = useState(false);
   const [solid, setSolid] = useState(false);
+  const [dark, setDark] = useState(false);
   const [tab, setTab] = useState({ left: 0, width: 0, index: 0 });
 
   /* ------------------------------------------------ sliding tab in the pill */
@@ -64,6 +67,19 @@ export function Navbar() {
       start: "bottom top+=60",
       onEnter: () => setSolid(true),
       onLeaveBack: () => setSolid(false),
+    });
+    return () => trigger.kill();
+  }, []);
+
+  /* ------------------------------------------------ dark bar over Pathways */
+  useEffect(() => {
+    const section = document.getElementById("pathways");
+    if (!section) return;
+    const trigger = ScrollTrigger.create({
+      trigger: section,
+      start: "top 55%",
+      end: "bottom 45%",
+      onToggle: (self) => setDark(self.isActive),
     });
     return () => trigger.kill();
   }, []);
@@ -120,13 +136,15 @@ export function Navbar() {
       {/* ------------------------------------------------------------ bar */}
       <div
         className={`fixed inset-x-0 top-0 z-50 border-b transition-[background-color,border-color,backdrop-filter] duration-500 ${
-          solid && !open
-            ? "border-black/[0.06] bg-white/90 backdrop-blur-xl"
-            : "border-transparent bg-transparent"
+          !solid || open
+            ? "border-transparent bg-transparent"
+            : dark
+              ? "border-white/10 bg-black/85 backdrop-blur-xl"
+              : "border-black/[0.06] bg-white/90 backdrop-blur-xl"
         }`}
       >
         <nav className="container-page flex h-[60px] items-center justify-between gap-4">
-          <Logo />
+          <Logo onDark={dark && !open} />
 
           <ul
             ref={pill}
@@ -142,7 +160,13 @@ export function Navbar() {
                 <Link
                   href={link.href}
                   className={`block whitespace-nowrap rounded-[4px] px-4 py-1.5 text-[14px] font-medium transition-colors duration-300 ${
-                    tab.index === i ? "text-white" : "text-body hover:text-ink"
+                    tab.index === i
+                      ? dark
+                        ? "text-ink"
+                        : "text-white"
+                      : dark
+                        ? "text-white/70 hover:text-white"
+                        : "text-body hover:text-ink"
                   }`}
                 >
                   {link.label}
@@ -153,12 +177,14 @@ export function Navbar() {
             <span
               aria-hidden
               style={{ left: tab.left, width: tab.width }}
-              className="absolute inset-y-1 rounded-[4px] bg-ink transition-[left,width] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
+              className={`absolute inset-y-1 rounded-[4px] transition-[left,width,background-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                dark ? "bg-white" : "bg-ink"
+              }`}
             />
           </ul>
 
           <div className="flex items-center gap-2">
-            <GlowButton href="#apply" size="sm" streak="#0b0d12" className="max-sm:hidden">
+            <GlowButton href="#apply" size="sm" streak={dark ? "#fff" : "#0b0d12"} className="max-sm:hidden">
               Apply Now
               <ArrowRight size={14} strokeWidth={2.2} aria-hidden />
             </GlowButton>
@@ -168,7 +194,9 @@ export function Navbar() {
               onClick={() => setOpen((v) => !v)}
               aria-expanded={open}
               aria-controls="site-menu"
-              className="group inline-flex h-[38px] items-center gap-3 rounded-[6px] bg-ink pl-4 pr-3.5 text-[13.5px] font-semibold text-white transition-colors hover:bg-black"
+              className={`group inline-flex h-[38px] items-center gap-3 rounded-[6px] pl-4 pr-3.5 text-[13.5px] font-semibold transition-colors ${
+                dark && !open ? "bg-white text-ink hover:bg-white/90" : "bg-ink text-white hover:bg-black"
+              }`}
             >
               <span className="relative block h-4 overflow-hidden">
                 <span
@@ -183,12 +211,12 @@ export function Navbar() {
               {/* two bars that cross into an X */}
               <span aria-hidden className="relative block size-3.5">
                 <span
-                  className={`absolute left-0 h-[1.5px] w-full bg-white transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                  className={`absolute left-0 h-[1.5px] w-full transition-all ${dark && !open ? "bg-ink" : "bg-white"} duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
                     open ? "top-1/2 -translate-y-1/2 rotate-45" : "top-[3px] rotate-0"
                   }`}
                 />
                 <span
-                  className={`absolute left-0 h-[1.5px] bg-white transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                  className={`absolute left-0 h-[1.5px] transition-all ${dark && !open ? "bg-ink" : "bg-white"} duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
                     open
                       ? "top-1/2 w-full -translate-y-1/2 -rotate-45"
                       : "bottom-[3px] w-2/3 rotate-0 group-hover:w-full"

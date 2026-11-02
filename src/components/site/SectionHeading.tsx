@@ -22,6 +22,9 @@ const SIZE = {
  *            Bricolage Grotesque in brand red (the hero's "Science")
  *   intro    body copy under it
  *
+ * Colours read --heading-fg / --heading-muted when a section sets them (e.g.
+ * Pathways fading to black), falling back to the site ink and body colours.
+ *
  * Every word sits in its own mask and rises into view, staggered, when the
  * heading scrolls in; the intro fades up after it. The real text is
  * always in the DOM, so nothing depends on the animation running.
@@ -101,7 +104,7 @@ export function SectionHeading({
     >
       <h2
         id={id}
-        className={`font-display font-bold leading-[1.15] tracking-[-0.03em] text-ink ${SIZE[size]}`}
+        className={`font-display font-bold leading-[1.15] tracking-[-0.03em] text-[color:var(--heading-fg,var(--ink))] ${SIZE[size]}`}
       >
         <span className="sr-only">
           {[title, accent, after].filter(Boolean).join(" ")}
@@ -116,7 +119,7 @@ export function SectionHeading({
       {intro && (
         <p
           data-heading-fade
-          className={`mt-4 text-[clamp(0.9375rem,1.1vw,1rem)] leading-[1.6] text-body ${
+          className={`mt-4 text-[clamp(0.9375rem,1.1vw,1rem)] leading-[1.6] text-[color:var(--heading-muted,var(--ink-body))] ${
             centred ? "mx-auto max-w-[640px]" : "max-w-[560px]"
           }`}
         >
