@@ -12,6 +12,7 @@ import { Faculty } from "@/components/sections/Faculty";
 import { IITRace } from "@/components/sections/IITRace";
 import { Spotlight } from "@/components/sections/Spotlight";
 import { News } from "@/components/sections/News";
+import { Scholarships } from "@/components/sections/Scholarships";
 
 export default function Home() {
   return (
@@ -31,6 +32,7 @@ export default function Home() {
         <IITRace />
         <Spotlight />
         <News />
+        <Scholarships />
       </main>
     </>
   );

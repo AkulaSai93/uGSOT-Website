@@ -258,7 +258,7 @@ export function News() {
   );
 
   return (
-    <section ref={root} id="news" className="bg-canvas py-20 lg:py-28">
+    <section ref={root} id="news" className="bg-canvas pb-12 pt-20 lg:pb-14 lg:pt-28">
       <div className="container-page">
         <SectionHeading
           title="Latest"
