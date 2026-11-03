@@ -14,7 +14,7 @@ import { Logo } from "./Logo";
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 /** sections with a black background: the nav switches to its dark style over them */
-const DARK_SECTIONS = ["pathways", "leaders"];
+const DARK_SECTIONS = ["pathways", "leaders", "toolkit"];
 
 const NAV_LINKS = [
   { label: "Home", href: "/" },

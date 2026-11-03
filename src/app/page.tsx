@@ -13,6 +13,9 @@ import { IITRace } from "@/components/sections/IITRace";
 import { Spotlight } from "@/components/sections/Spotlight";
 import { News } from "@/components/sections/News";
 import { Scholarships } from "@/components/sections/Scholarships";
+import { Admission } from "@/components/sections/Admission";
+import { Toolkit } from "@/components/sections/Toolkit";
+import { Testimonials } from "@/components/sections/Testimonials";
 
 export default function Home() {
   return (
@@ -33,6 +36,9 @@ export default function Home() {
         <Spotlight />
         <News />
         <Scholarships />
+        <Admission />
+        <Toolkit />
+        <Testimonials />
       </main>
     </>
   );
