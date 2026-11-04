@@ -95,7 +95,7 @@ function ExploreButton({ campus }: { campus: (typeof CAMPUSES)[number] }) {
         href={campus.href}
         target="_blank"
         rel="noopener noreferrer"
-        className="group relative z-[2] inline-flex w-full min-w-[212px] items-center justify-center gap-2 rounded-[6px] bg-white px-6 py-3 text-[14.5px] font-semibold text-ink transition-colors hover:text-accent"
+        className="group relative z-[2] inline-flex w-full min-w-[212px] items-center justify-center gap-2 rounded-[4px] bg-white px-6 py-3 text-[14.5px] font-semibold text-ink transition-colors hover:text-accent"
       >
         Explore campus
         <ArrowUpRight

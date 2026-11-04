@@ -1,13 +1,12 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
-import { Check } from "lucide-react";
 import { SectionHeading } from "@/components/site/SectionHeading";
-import { GlowButton } from "@/components/site/GlowButton";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -16,19 +15,23 @@ gsap.registerPlugin(ScrollTrigger, useGSAP);
  *
  * Copy and photos are sot.upgrad.com's, verbatim: the heading and line, the
  * four students' words (each quote in two parts, as there) with their three
- * takeaways, and the closing "Get started" call with its three facts and
- * "Apply Now".
+ * takeaways, and the closing "Get started" call and "Apply Now".
  *
- * Layout, kept clean — no panels or rules: the centred heading, then one
- * testimonial at a time, centred: a red quote mark, the first part of the quote
- * in large type and the second quieter beneath, the takeaways as a dotted line
- * of small text and the student's name. Under it the four students' photos in a
- * row switch between them (the current one ringed in red). Then the call to
- * action as a light, centred block.
+ * Layout after a persona carousel the client supplied: the centred heading,
+ * then the current student's card in the middle, red with a black border
+ * and white type like the scholarship card in Admission (the others white) — their photo beside their
+ * name and takeaways, the two parts of their quote beneath under small grey
+ * labels — with the previous and next students' cards beside it, the same
+ * size, hinged on their inner edges and turned away in 3D, faded.
+ * Under it the four photos in a row pick between them (the current one ringed
+ * in black). Then the call to action as a full-width band of red fluted
+ * glass, as newtonschool.co closes its page: the line on the left, a white Apply Now on
+ * the right.
  *
- * Motion (GSAP): the quotes take turns on their own every few seconds (paused
- * while the pointer is over them or the section is off screen) — the old one
- * lifts away and the new one rises in; the call to action rises in on scroll.
+ * Motion (GSAP): the cards swing round the carousel to their places; the
+ * students take turns on their own every few seconds (paused while the pointer
+ * is on them or the section is off screen); the call to action rises in on
+ * scroll. Below md only the current card shows.
  */
 const STUDENTS = [
   {
@@ -65,121 +68,142 @@ const STUDENTS = [
   },
 ] as const;
 
-const FACTS = [
-  "1000+ students attempted",
-  "Up to 100% scholarship",
-  "4-year B.Tech in CS",
-];
+/** the call to action's backdrop: red fluted glass — deep maroon at the
+ *  edges brightening to a hot red in the middle, cut into vertical ribs of
+ *  uneven width (three repeating patterns of different periods laid over one
+ *  another, so the ribs never line up into a regular grid) */
+const FLUTED = [
+  "repeating-linear-gradient(90deg, rgba(0,0,0,0.24) 0 10px, rgba(255,30,60,0.14) 28px 34px, rgba(0,0,0,0.18) 52px)",
+  "repeating-linear-gradient(90deg, rgba(0,0,0,0) 0 34px, rgba(255,40,70,0.16) 46px, rgba(0,0,0,0.16) 62px, rgba(0,0,0,0) 78px)",
+  "repeating-linear-gradient(90deg, rgba(0,0,0,0) 0 90px, rgba(0,0,0,0.22) 110px, rgba(255,50,80,0.14) 130px, rgba(0,0,0,0) 152px)",
+  "linear-gradient(90deg, #1f0006 0%, #5c0014 16%, #b8001f 34%, #ff1f3d 50%, #b8001f 66%, #5c0014 84%, #1f0006 100%)",
+].join(", ");
 
-const ROTATE_MS = 6500;
+/** how long each student's card stays in front before the next one's */
+const ROTATE_S = 6.5;
+
+/** where a card sits for its place relative to the current one: in front;
+ *  beside it on the right or left, the same size, hinged on its inner edge
+ *  and turned away (so its outer edge recedes), faded; or hidden behind */
+const GAP = 14;
+const POSE = {
+  0: {
+    xPercent: 0,
+    x: 0,
+    rotationY: 0,
+    transformOrigin: "50% 50%",
+    scale: 1,
+    autoAlpha: 1,
+    filter: "blur(0px)",
+    zIndex: 3,
+  },
+  1: {
+    xPercent: 100,
+    x: GAP,
+    rotationY: 32,
+    transformOrigin: "0% 50%",
+    scale: 1,
+    autoAlpha: 0.32,
+    filter: "blur(1.5px)",
+    zIndex: 2,
+  },
+  [-1]: {
+    xPercent: -100,
+    x: -GAP,
+    rotationY: -32,
+    transformOrigin: "100% 50%",
+    scale: 1,
+    autoAlpha: 0.32,
+    filter: "blur(1.5px)",
+    zIndex: 2,
+  },
+  2: {
+    xPercent: 0,
+    x: 0,
+    rotationY: 0,
+    transformOrigin: "50% 50%",
+    scale: 0.8,
+    autoAlpha: 0,
+    filter: "blur(4px)",
+    zIndex: 1,
+  },
+} as const;
 
 export function Testimonials() {
   const root = useRef<HTMLElement>(null);
   const [active, setActive] = useState(0);
-  const paused = useRef(false);
+  const timer = useRef<gsap.core.Tween | null>(null);
+  const hovered = useRef(false);
+  const onScreen = useRef(false);
   const first = useRef(true);
-  const changedAt = useRef(0);
 
-  // take turns on their own, unless the reader is on them or they're off screen
-  useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const el = root.current;
-    let visible = false;
-    const io = new IntersectionObserver(([e]) => (visible = e.isIntersecting), {
-      threshold: 0.3,
-    });
-    if (el) io.observe(el);
-    // checked often, but a turn only comes ROTATE_MS after the last change,
-    // so picking a student gives the full time to read theirs
-    const id = window.setInterval(() => {
-      if (
-        visible &&
-        !paused.current &&
-        Date.now() - changedAt.current >= ROTATE_MS
-      )
-        setActive((i) => (i + 1) % STUDENTS.length);
-    }, 400);
-    return () => {
-      window.clearInterval(id);
-      io.disconnect();
-    };
-  }, []);
-
-  // the old quote lifts away, the new one rises in
-  useGSAP(
-    () => {
-      changedAt.current = Date.now();
-      const quotes = gsap.utils.toArray<HTMLElement>(
-        "[data-quote]",
-        root.current,
-      );
-      if (first.current) {
-        first.current = false;
-        quotes.forEach((qEl, i) =>
-          gsap.set(qEl, { autoAlpha: i === active ? 1 : 0 }),
-        );
-        return;
-      }
-      const reduced = window.matchMedia(
-        "(prefers-reduced-motion: reduce)",
-      ).matches;
-      quotes.forEach((qEl, i) => {
-        if (i === active) {
-          gsap.fromTo(
-            qEl,
-            { autoAlpha: 0, y: 18 },
-            {
-              autoAlpha: 1,
-              y: 0,
-              duration: reduced ? 0 : 0.8,
-              delay: reduced ? 0 : 0.2,
-              ease: "expo.out",
-              overwrite: true,
-            },
-          );
-        } else {
-          gsap.to(qEl, {
-            autoAlpha: 0,
-            y: -12,
-            duration: reduced ? 0 : 0.35,
-            ease: "power2.in",
-            overwrite: true,
-          });
-        }
-      });
-    },
-    { dependencies: [active], scope: root },
-  );
+  // pause the turn while the reader is on it or it's off screen
+  const sync = () => {
+    const t = timer.current;
+    if (!t) return;
+    if (hovered.current || !onScreen.current) t.pause();
+    else t.resume();
+  };
 
   useGSAP(
     () => {
-      const q = gsap.utils.selector(root);
-      const mm = gsap.matchMedia();
-      mm.add("(prefers-reduced-motion: no-preference)", () => {
-        gsap.fromTo(
-          q("[data-rise]"),
-          { y: 30, autoAlpha: 0 },
-          {
-            y: 0,
-            autoAlpha: 1,
-            duration: 1,
-            ease: "expo.out",
-            stagger: 0.12,
-            scrollTrigger: {
-              trigger: q("[data-rise]")[0],
-              start: "top 85%",
-              toggleActions: "play none none none",
-            },
-          },
-        );
+      ScrollTrigger.create({
+        trigger: root.current,
+        start: "top 80%",
+        end: "bottom 20%",
+        onToggle: (self) => {
+          onScreen.current = self.isActive;
+          sync();
+        },
       });
-      return () => mm.revert();
     },
     { scope: root },
   );
 
+  // each card swings to its place round the carousel, then the turn's timer
+  // starts for the next student
+  useGSAP(
+    () => {
+      const q = gsap.utils.selector(root);
+      const reduced = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
+      const n = STUDENTS.length;
+
+      q("[data-card]").forEach((el, i) => {
+        const d = (i - active + n) % n;
+        const place = d === n - 1 ? -1 : d;
+        const vars = POSE[place as keyof typeof POSE];
+        if (first.current || reduced) gsap.set(el, vars);
+        else
+          gsap.to(el, {
+            ...vars,
+            duration: 0.9,
+            ease: "expo.out",
+            overwrite: true,
+          });
+      });
+      first.current = false;
+
+      if (reduced) return;
+      timer.current = gsap.delayedCall(ROTATE_S, () =>
+        setActive((i) => (i + 1) % n),
+      );
+      sync();
+      return () => {
+        timer.current?.kill();
+        timer.current = null;
+      };
+    },
+    { dependencies: [active], scope: root },
+  );
+
   return (
-    <section ref={root} id="testimonials" className="bg-canvas py-20 lg:py-28">
+    <section
+      ref={root}
+      id="testimonials"
+      className="overflow-x-clip bg-canvas pt-20 lg:pt-28"
+    >
       <div className="container-page">
         <SectionHeading
           title="1000+ Students Have Already Attempted"
@@ -195,121 +219,135 @@ export function Testimonials() {
 
         <div
           data-rise
-          className="mx-auto mt-14 max-w-[880px] text-center lg:mt-16"
-          onMouseEnter={() => (paused.current = true)}
-          onMouseLeave={() => (paused.current = false)}
+          className="mt-12 lg:mt-14"
+          onMouseEnter={() => {
+            hovered.current = true;
+            sync();
+          }}
+          onMouseLeave={() => {
+            hovered.current = false;
+            sync();
+          }}
         >
-          {/* every quote in the same grid cell, so the block keeps the height of
-              the longest and nothing below jumps as they change */}
-          <div className="grid">
-            {STUDENTS.map((s, i) => (
+          {/* the carousel: every card in one grid cell, so the stage keeps the
+              height of the tallest */}
+          <div className="mx-auto grid w-full max-w-[460px] [perspective:1100px] max-md:[&>[aria-hidden=true]]:!opacity-0">
+            {STUDENTS.map((st, i) => (
               <figure
-                key={s.name}
-                data-quote
+                key={st.name}
+                data-card
                 aria-hidden={i !== active}
-                className={`[grid-area:1/1] ${i === active ? "" : "invisible"}`}
+                onClick={() => setActive(i)}
+                className={`rounded-[6px] border-2 p-7 transition-colors duration-500 [grid-area:1/1] ${
+                  i === active
+                    ? "border-ink bg-accent text-white"
+                    : "cursor-pointer border-ink/10 bg-white text-ink"
+                }`}
               >
-                <span
-                  aria-hidden
-                  className="block font-[family-name:var(--font-bricolage)] text-[64px] font-semibold leading-[0.6] text-accent"
-                >
-                  &ldquo;
-                </span>
-                <blockquote className="mt-6">
-                  <p className="font-display text-[clamp(1.25rem,2.2vw,1.75rem)] font-semibold leading-[1.35] tracking-[-0.02em] text-ink">
-                    {s.lead}
-                  </p>
-                  <p className="mx-auto mt-4 max-w-[640px] text-[16px] leading-relaxed text-body">
-                    {s.rest}
-                  </p>
-                </blockquote>
-                <figcaption className="mt-6">
-                  <span className="block text-[15px] font-semibold text-ink">
-                    {s.name}
-                  </span>
-                  <span className="mt-1.5 block text-[13px] font-medium text-body">
-                    {s.tags.map((t, k) => (
-                      <span key={t}>
-                        {k > 0 && (
-                          <span aria-hidden className="mx-2 text-accent">
-                            ·
-                          </span>
-                        )}
-                        {t}
-                      </span>
-                    ))}
+                <figcaption className="flex items-center gap-5">
+                  <Image
+                    src={`/images/students/${st.img}.png`}
+                    alt=""
+                    width={100}
+                    height={100}
+                    className="size-[100px] shrink-0 rounded-[6px] object-cover"
+                  />
+                  <span>
+                    <span className="block text-[18px] font-semibold">
+                      {st.name}
+                    </span>
+                    <span className="mt-1.5 block text-[13.5px] leading-snug opacity-75">
+                      {st.tags[0]}
+                      <br />
+                      {st.tags[1]}, {st.tags[2]}
+                    </span>
                   </span>
                 </figcaption>
+                <blockquote className="mt-6 text-[14px] leading-[1.5]">
+                  <p className="text-[13.5px] opacity-70">Their story</p>
+                  <p className="mt-1">{st.lead}</p>
+                  <p className="mt-5 text-[13.5px] opacity-70">
+                    Their takeaway
+                  </p>
+                  <p className="mt-1">{st.rest}</p>
+                </blockquote>
               </figure>
             ))}
           </div>
 
-          {/* the four students; pick one to read theirs */}
+          {/* the four students' photos; pick one to bring their card round */}
           <div
             role="tablist"
             aria-label="Students"
-            className="mt-10 flex justify-center gap-4"
+            className="mt-8 flex justify-center gap-1.5"
           >
-            {STUDENTS.map((s, i) => (
+            {STUDENTS.map((st, i) => (
               <button
-                key={s.name}
+                key={st.name}
                 type="button"
                 role="tab"
                 aria-selected={i === active}
-                aria-label={s.name}
+                aria-label={st.name}
                 onClick={() => setActive(i)}
-                className={`relative size-14 rounded-full p-[3px] transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                className={`size-11 overflow-hidden rounded-[6px] transition-[box-shadow,opacity] duration-300 ${
                   i === active
-                    ? "scale-110 shadow-[0_0_0_2px_var(--accent)]"
+                    ? "shadow-[0_0_0_2px_var(--canvas),0_0_0_4px_var(--ink)]"
                     : "opacity-60 hover:opacity-100"
                 }`}
               >
                 <Image
-                  src={`/images/students/${s.img}.png`}
+                  src={`/images/students/${st.img}.png`}
                   alt=""
-                  width={56}
-                  height={56}
-                  className="size-full rounded-full object-cover"
+                  width={44}
+                  height={44}
+                  className="size-full object-cover"
                 />
               </button>
             ))}
           </div>
         </div>
+      </div>
 
-        {/* the call to action, light and centred */}
+      {/* the call to action: a full-width band of red fluted glass, as
+          newtonschool.co closes its page (theirs is blue); the line on the
+          left, Apply Now on the right */}
+      <div
+        id="get-started"
+        className="relative mt-20 overflow-hidden py-12 lg:mt-24 lg:py-14"
+        style={{ background: FLUTED }}
+      >
         <div
           data-rise
-          className="mx-auto mt-20 flex max-w-[720px] flex-col items-center text-center lg:mt-24"
+          className="container-page flex flex-col items-start gap-7 md:flex-row md:items-center md:justify-between"
         >
-          <h3 className="font-display text-[clamp(1.375rem,2.2vw,1.875rem)] font-bold leading-[1.2] tracking-[-0.02em] text-ink">
-            Get started on your journey towards your{" "}
-            <span className="font-[family-name:var(--font-bricolage)] font-semibold text-accent">
-              dream tech career
-            </span>
-          </h3>
-          <p className="mt-3 text-[15px] leading-relaxed text-body">
-            Appear for uGNET — scholarship test, interview, and admission in one
-            streamlined flow.
-          </p>
-          <ul className="mt-5 flex flex-wrap justify-center gap-x-6 gap-y-2">
-            {FACTS.map((f) => (
-              <li
-                key={f}
-                className="flex items-center gap-2 text-[14px] font-medium text-ink"
-              >
-                <Check
-                  size={16}
-                  strokeWidth={2.5}
-                  aria-hidden
-                  className="text-accent"
-                />
-                {f}
-              </li>
-            ))}
-          </ul>
-          <div className="mt-8">
-            <GlowButton href="#apply">Apply Now</GlowButton>
+          <div className="max-w-[560px]">
+            <h3 className="font-display text-[clamp(1.375rem,2.2vw,1.875rem)] font-bold leading-[1.2] tracking-[-0.02em] text-white">
+              Get started on your journey towards your{" "}
+              <span className="font-[family-name:var(--font-bricolage)] font-semibold">
+                dream tech career
+              </span>
+            </h3>
+            <p className="mt-3 text-[15px] leading-relaxed text-white/80">
+              Appear for uGNET scholarship test, interview, and admission in one
+              streamlined flow.
+            </p>
           </div>
+          {/* Apply Now, white on the red, with the hero CTA's sweeping glow */}
+          <Link
+            href="#apply"
+            className="group/cta relative inline-flex shrink-0 overflow-hidden rounded-[6px] p-[1.5px]"
+          >
+            <span
+              aria-hidden
+              style={{
+                backgroundImage: "conic-gradient(transparent 200deg, #0b0d12)",
+              }}
+              className="cta-glow absolute left-1/2 top-1/2 aspect-square w-[160%]"
+            />
+            <span className="relative z-[2] inline-flex items-center gap-2 whitespace-nowrap rounded-[5px] bg-white px-6 py-3.5 text-[15px] font-semibold text-ink transition-colors group-hover/cta:bg-white/90">
+              Apply Now
+            </span>
+          </Link>
         </div>
       </div>
     </section>

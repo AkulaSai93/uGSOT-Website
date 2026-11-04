@@ -128,7 +128,8 @@ function CentreStudent() {
       // fade the cropped bottom edge out into the page background
       style={{
         maskImage: "linear-gradient(to bottom, #000 72%, transparent 100%)",
-        WebkitMaskImage: "linear-gradient(to bottom, #000 72%, transparent 100%)",
+        WebkitMaskImage:
+          "linear-gradient(to bottom, #000 72%, transparent 100%)",
       }}
     />
   );
@@ -209,9 +210,7 @@ function Panel({
   return (
     <div
       className={`relative isolate flex h-full flex-col overflow-hidden rounded-[6px] px-8 pb-6 pt-[68px] ${
-        dark
-          ? ""
-          : "border border-black/[0.08] bg-white"
+        dark ? "" : "border border-black/[0.08] bg-white"
       }`}
       style={
         dark
@@ -297,7 +296,12 @@ export function BestOfBoth() {
     const tween = gsap.to(progress, {
       p: 1,
       ease: "none",
-      scrollTrigger: { trigger: track, start: "top top", end: "bottom bottom", scrub: 0.8 },
+      scrollTrigger: {
+        trigger: track,
+        start: "top top",
+        end: "bottom bottom",
+        scrub: 0.8,
+      },
       onUpdate: () => {
         const p = progress.p;
         // Three phases, strictly in order, so nothing overlaps:
@@ -305,8 +309,14 @@ export function BestOfBoth() {
         //   --lift  0.55 -> 0.74  headline travels to the top of the frame
         //   --cards 0.78 -> 0.95  panels fade up underneath it
         stage.style.setProperty("--a", String(clamp(p / 0.55, 0, 1)));
-        stage.style.setProperty("--lift", String(clamp((p - 0.55) / 0.19, 0, 1)));
-        stage.style.setProperty("--cards", String(clamp((p - 0.78) / 0.17, 0, 1)));
+        stage.style.setProperty(
+          "--lift",
+          String(clamp((p - 0.55) / 0.19, 0, 1)),
+        );
+        stage.style.setProperty(
+          "--cards",
+          String(clamp((p - 0.78) / 0.17, 0, 1)),
+        );
       },
     });
     return () => {
@@ -342,7 +352,8 @@ export function BestOfBoth() {
     "font-display text-[clamp(1.625rem,2.8vw,2.5rem)] font-bold leading-[1.2] tracking-[-0.03em] text-ink whitespace-nowrap";
 
   /** red accent words: the hero's accent face */
-  const accentClass = "font-[family-name:var(--font-bricolage)] font-semibold tracking-[-0.01em] text-accent";
+  const accentClass =
+    "font-[family-name:var(--font-bricolage)] font-semibold tracking-[-0.01em] text-accent";
 
   return (
     <section id="best-of-both" className="bg-canvas">
@@ -364,6 +375,9 @@ export function BestOfBoth() {
                   "translate(-50%, calc(-50% - var(--lift) * (41vh - 53px)))",
               }}
             >
+              {/* the sentence in reading order, for screen readers and for
+                  copying; the halves around the video are not selectable, so
+                  a copy picks this up once and in order */}
               <span className="sr-only">
                 {HEAD_LEFT[0]}
                 {HEAD_RIGHT[0]} {HEAD_LEFT[1]}
@@ -379,15 +393,14 @@ export function BestOfBoth() {
                   geometry does it. */}
               <span
                 aria-hidden
-                className={`${headingClass} flex min-w-0 flex-col items-end text-right`}
+                className={`${headingClass} flex min-w-0 select-none flex-col items-end text-right`}
                 style={{ opacity: "clamp(0, (var(--a) - 0.05) * 6, 1)" }}
               >
                 {HEAD_LEFT.map((line, i) => (
                   <span key={line} className="block">
                     {i === 1 ? (
                       <>
-                        Meets{" "}
-                        <span className={accentClass}>Silicon</span>
+                        Meets <span className={accentClass}>Silicon</span>
                         {"\u00a0"}
                       </>
                     ) : (
@@ -426,8 +439,11 @@ export function BestOfBoth() {
                 </span>
               </span>
 
-              <span aria-hidden className={`${headingClass} flex min-w-0 flex-col items-start text-left`}
-                style={{ opacity: "clamp(0, (var(--a) - 0.05) * 6, 1)" }}>
+              <span
+                aria-hidden
+                className={`${headingClass} flex min-w-0 select-none flex-col items-start text-left`}
+                style={{ opacity: "clamp(0, (var(--a) - 0.05) * 6, 1)" }}
+              >
                 {HEAD_RIGHT.map((line, i) => (
                   <span
                     key={line}

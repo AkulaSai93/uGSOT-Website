@@ -19,14 +19,14 @@ gsap.registerPlugin(ScrollTrigger, useGSAP);
  * Layout after a reference the client supplied: the centred heading, then on
  * the left the five steps down a timeline (a dot with a soft halo, the step,
  * its title and line), and on the right the scholarship note as a bold red
- * card with a black border and a hard offset shadow, its button a full-width
- * white bar with a small hard shadow of its own. The card stays in view
+ * card with a black border, its button a full-width white bar with the
+ * hero CTA's sweeping glow round its edge. The card stays in view
  * beside the steps on desktop; on phones it follows them.
  *
  * Motion (GSAP): as the steps scroll through the screen the red line fills
  * down the track (scrubbed) and each dot turns red as the line reaches it;
  * the steps rise in one after another and the card rises in. The button
- * presses into its shadow on hover.
+ * glow sweeps round the button all the time, as on the hero's.
  */
 const UGNET = "https://sot.upgrad.com/uGNET";
 /** where "Resume Application" goes; the uGNET page until a direct link is supplied */
@@ -211,12 +211,12 @@ export function Admission() {
             ))}
           </ol>
 
-          {/* right: the scholarship note as a bold card with a hard offset
-              shadow; it stays in view beside the steps on desktop */}
+          {/* right: the scholarship note as a bold card; it stays in view
+              beside the steps on desktop */}
           <div className="lg:sticky lg:top-28 lg:self-start">
             <div
               data-cta
-              className="rounded-[6px] border-2 border-ink bg-accent p-7 text-white shadow-[8px_8px_0_#0b0d12] sm:p-9"
+              className="rounded-[6px] border-2 border-ink bg-accent p-7 text-white sm:p-9"
             >
               <h3 className="font-display text-[clamp(1.5rem,2.3vw,2rem)] font-bold leading-[1.15] tracking-[-0.02em]">
                 Study Without Limits: Up to 100% Scholarships
@@ -230,15 +230,26 @@ export function Admission() {
                 href={RESUME_HREF}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group/cta mt-10 flex w-full items-center justify-center gap-2 rounded-[6px] border-2 border-ink bg-white px-6 py-4 text-[16px] font-semibold text-ink shadow-[4px_4px_0_#0b0d12] transition-[transform,box-shadow] duration-200 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0_#0b0d12]"
+                className="group/cta relative mt-10 flex w-full overflow-hidden rounded-[6px] p-[2px]"
               >
-                Resume Application
-                <ArrowUpRight
-                  size={18}
-                  strokeWidth={2}
+                {/* the hero CTA's glow: a dark sliver sweeping round the edge */}
+                <span
                   aria-hidden
-                  className="transition-transform duration-300 group-hover/cta:-translate-y-0.5 group-hover/cta:translate-x-0.5"
+                  style={{
+                    backgroundImage:
+                      "conic-gradient(transparent 200deg, #0b0d12)",
+                  }}
+                  className="cta-glow absolute left-1/2 top-1/2 aspect-square w-[160%]"
                 />
+                <span className="relative z-[2] flex w-full items-center justify-center gap-2 rounded-[4px] bg-white px-6 py-4 text-[16px] font-semibold text-ink transition-colors duration-200 group-hover/cta:bg-white/90">
+                  Resume Application
+                  <ArrowUpRight
+                    size={18}
+                    strokeWidth={2}
+                    aria-hidden
+                    className="transition-transform duration-300 group-hover/cta:-translate-y-0.5 group-hover/cta:translate-x-0.5"
+                  />
+                </span>
               </a>
             </div>
           </div>

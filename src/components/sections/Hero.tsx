@@ -51,7 +51,12 @@ export function Hero() {
       const pillBox = () => {
         const s = stage.current!.getBoundingClientRect();
         const p = pill.current!.getBoundingClientRect();
-        return { left: p.left - s.left, top: p.top - s.top, width: p.width, height: p.height };
+        return {
+          left: p.left - s.left,
+          top: p.top - s.top,
+          width: p.width,
+          height: p.height,
+        };
       };
       const placeOnPill = () => {
         const b = pillBox();
@@ -73,11 +78,22 @@ export function Hero() {
         /* ---------------------------------------------- act 1: entrance */
         const intro = gsap.timeline({ defaults: { ease: "expo.out" } });
         intro
-          .fromTo(q(".hero-bg"), { scale: 1.12, opacity: 0 }, { scale: 1, opacity: 1, duration: 2.2 }, 0)
+          .fromTo(
+            q(".hero-bg"),
+            { scale: 1.12, opacity: 0 },
+            { scale: 1, opacity: 1, duration: 2.2 },
+            0,
+          )
           .fromTo(
             q("[data-reveal='word']"),
             { yPercent: 110, rotate: 4, autoAlpha: 0 },
-            { yPercent: 0, rotate: 0, autoAlpha: 1, duration: 1.15, stagger: 0.075 },
+            {
+              yPercent: 0,
+              rotate: 0,
+              autoAlpha: 1,
+              duration: 1.15,
+              stagger: 0.075,
+            },
             0.1,
           )
           .fromTo(
@@ -132,12 +148,29 @@ export function Hero() {
           },
           0,
         )
-          .to(q(".hero-line-1"), { x: () => -vw() * 0.18, opacity: 0, duration: 0.4 }, 0)
-          .to(q(".hero-line-3"), { x: () => vw() * 0.18, opacity: 0, duration: 0.4 }, 0)
+          .to(
+            q(".hero-line-1"),
+            { x: () => -vw() * 0.18, opacity: 0, duration: 0.4 },
+            0,
+          )
+          .to(
+            q(".hero-line-3"),
+            { x: () => vw() * 0.18, opacity: 0, duration: 0.4 },
+            0,
+          )
           .to(q(".hero-line-2-text"), { opacity: 0, duration: 0.25 }, 0)
           .to(q(".hero-bottom"), { y: 40, opacity: 0, duration: 0.25 }, 0)
-          .to(q(".hero-bg-wrap"), { scale: 1.1, yPercent: -3, duration: 0.55 }, 0)
-          .fromTo(q(".hero-video"), { scale: 1.35 }, { scale: 1, duration: 0.7 }, 0)
+          .to(
+            q(".hero-bg-wrap"),
+            { scale: 1.1, yPercent: -3, duration: 0.55 },
+            0,
+          )
+          .fromTo(
+            q(".hero-video"),
+            { scale: 1.35 },
+            { scale: 1, duration: 0.7 },
+            0,
+          )
           .to(q(".hero-fade"), { opacity: 1, duration: 0.25 }, 0.3)
           .to({}, { duration: 0.25 }); // hold the full-bleed film before the stage scrolls away
 
@@ -156,7 +189,10 @@ export function Hero() {
       aria-label="AI-First B.Tech in Computer Science"
       className="relative h-[200svh] bg-[#ffffff] text-ink motion-reduce:h-svh"
     >
-      <div ref={stage} className="sticky top-0 isolate h-svh min-h-[640px] overflow-clip">
+      <div
+        ref={stage}
+        className="sticky top-0 isolate h-svh min-h-[640px] overflow-clip"
+      >
         {/* --------------------------------------------- background image */}
         {/* Full-bleed illustration, Conclave-style: students looking out at a
             city skyline at sunrise on the right, calm bright sky on the left. A white wash
@@ -200,29 +236,36 @@ export function Hero() {
 
         {/* ------------------------------------------------------- act 1 */}
         <div className="container-page relative z-10 flex h-full flex-col justify-center pb-8 pt-[80px] lg:pt-[88px]">
-          {/* Real heading text for assistive tech; the visual lines are aria-hidden. */}
+          {/* The words are the heading's real text (one mask each, real spaces
+              between), so it reads, selects and copies as written. */}
           <h1 className="font-display text-[min(11vw,9vh)] font-bold leading-[0.95] tracking-[-0.04em] sm:text-[min(6vw,9.5vh)]">
-            <span className="sr-only">AI-First B.Tech in Computer Science</span>
-            <span aria-hidden className="block">
+            <span className="block">
               <span className="hero-line-1 block">
                 <MaskWord attr="hero">AI-First</MaskWord>
-              </span>
+              </span>{" "}
               <span className="hero-line-2 flex items-center gap-[0.18em]">
-                <span className="hero-line-2-text inline-flex gap-[0.22em]">
-                  <MaskWord attr="hero">B.Tech</MaskWord>
-                  <MaskWord attr="hero" className="font-[family-name:var(--font-bricolage)] font-semibold tracking-[-0.02em] text-ink/55">
+                <span className="hero-line-2-text inline-block whitespace-nowrap">
+                  <MaskWord attr="hero">B.Tech</MaskWord>{" "}
+                  <MaskWord
+                    attr="hero"
+                    className="font-[family-name:var(--font-bricolage)] font-semibold tracking-[-0.02em] text-ink/55"
+                  >
                     in
                   </MaskWord>
                 </span>
                 {/* Placeholder box: the floating film is measured against it. */}
                 <span
                   ref={pill}
+                  aria-hidden
                   className="inline-block h-[0.74em] w-[1.9em] shrink-0 translate-y-[0.04em] rounded-full"
                 />
-              </span>
-              <span className="hero-line-3 flex flex-wrap gap-x-[0.22em]">
-                <MaskWord attr="hero">Computer</MaskWord>
-                <MaskWord attr="hero" className="font-[family-name:var(--font-bricolage)] font-semibold tracking-[-0.02em] text-accent">
+              </span>{" "}
+              <span className="hero-line-3 block">
+                <MaskWord attr="hero">Computer</MaskWord>{" "}
+                <MaskWord
+                  attr="hero"
+                  className="font-[family-name:var(--font-bricolage)] font-semibold tracking-[-0.02em] text-accent"
+                >
                   Science
                 </MaskWord>
               </span>
@@ -231,12 +274,19 @@ export function Hero() {
 
           {/* Content block, same order as the current site's hero. */}
           <div className="hero-bottom mt-[clamp(1rem,2.6vh,1.75rem)] max-w-[640px]">
-            <p data-reveal="fade" className="text-[14px] leading-relaxed text-body sm:text-[15px]">
-              Quantum Computing <span className="text-ink/30">|</span> GenAI &amp; ML{" "}
-              <span className="text-ink/30">|</span> Full Stack Development &amp; Cloud Innovation
+            <p
+              data-reveal="fade"
+              className="text-[14px] leading-relaxed text-body sm:text-[15px]"
+            >
+              Quantum Computing <span className="text-ink/30">|</span> GenAI
+              &amp; ML <span className="text-ink/30">|</span> Full Stack
+              Development &amp; Cloud Innovation
             </p>
 
-            <p data-reveal="fade" className="mt-[clamp(0.625rem,1.8vh,1rem)] text-[14.5px] font-bold text-ink">
+            <p
+              data-reveal="fade"
+              className="mt-[clamp(0.625rem,1.8vh,1rem)] text-[14.5px] font-bold text-ink"
+            >
               Admission starts with uGNET
             </p>
 
@@ -244,7 +294,10 @@ export function Hero() {
               <HeroFacts className="mt-[clamp(0.625rem,1.6vh,1rem)]" />
             </div>
 
-            <div data-reveal="fade" className="mt-[clamp(1rem,2.4vh,1.5rem)] flex flex-wrap items-center gap-3">
+            <div
+              data-reveal="fade"
+              className="mt-[clamp(1rem,2.4vh,1.5rem)] flex flex-wrap items-center gap-3"
+            >
               <Magnetic>
                 <GlowButton href="#apply" streak="#0b0d12">
                   Apply Now
@@ -267,7 +320,10 @@ export function Hero() {
               </Magnetic>
             </div>
 
-            <div data-reveal="fade" className="mt-[clamp(1.25rem,3vh,2rem)] hidden lg:block">
+            <div
+              data-reveal="fade"
+              className="mt-[clamp(1.25rem,3vh,2rem)] hidden lg:block"
+            >
               <CompanyLogos tone="light" compact />
             </div>
           </div>

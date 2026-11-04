@@ -41,27 +41,28 @@ const CARDS: (Video & { x: number; y: number; rot: number })[] = [
   { ...v("62DTA1vKiQc", "Dr. GP Parmeshwara"), x: 37, y: 23, rot: 4 },
   { ...v("VW6o8kBMMec", "MS Chouhan"), x: 63, y: 24, rot: -3 },
   { ...v("88BOBhbr6Kk", "Sarvesh"), x: 88, y: 26, rot: 6 },
-  { ...v("yvkFaqdWhsU", "Dr Vivek Veeriah"), x: 11, y: 55, rot: 5 },
-  { ...v("JMiHXRkSS60", "GB Sir"), x: 89, y: 54, rot: -5 },
-  { ...v("f6D1HfiAJSc", "Anand Sir"), x: 21, y: 84, rot: -4 },
-  { ...v("mfreytCBQK4", "Ashu Sir"), x: 50, y: 85, rot: 3 },
-  { ...v("aJ16Pt0rGjA", "Rahul Arora"), x: 79, y: 84, rot: 6 },
+  { ...v("yvkFaqdWhsU", "Dr Vivek Veeriah"), x: 11, y: 52, rot: 5 },
+  { ...v("JMiHXRkSS60", "GB Sir"), x: 89, y: 52, rot: -5 },
+  { ...v("f6D1HfiAJSc", "Anand Sir"), x: 21, y: 79, rot: -4 },
+  { ...v("mfreytCBQK4", "Ashu Sir"), x: 50, y: 79, rot: 3 },
+  { ...v("aJ16Pt0rGjA", "Rahul Arora"), x: 79, y: 79, rot: 6 },
 ];
-/** where the pile sits (% down the screen): above the middle, so it shows
- *  close under the block before this one rather than after a stretch of white */
-const PILE_Y = 34;
+/** where the pile sits (% down the screen): the middle */
+const PILE_Y = 50;
 /** how each card sits in the pile: spin (deg), lean back (rotateX) and turn
- *  (rotateY), and a small offset from dead centre (px) so the pile fans */
+ *  (rotateY), and its offset from dead centre (px). The offsets follow each
+ *  card's place in the spread (top row up, left column left…) and balance out
+ *  around the centre, so the pile is centred and the cards only overlap a little */
 const PILE = [
-  { r: -9, rx: 16, ry: -22, dx: -120, dy: -60 },
-  { r: 5, rx: 12, ry: 18, dx: 90, dy: -80 },
-  { r: -3, rx: 20, ry: -10, dx: -30, dy: -110 },
-  { r: 8, rx: 14, ry: 24, dx: 150, dy: -20 },
-  { r: -6, rx: 18, ry: -26, dx: -170, dy: 30 },
-  { r: 4, rx: 10, ry: 20, dx: 160, dy: 60 },
-  { r: -7, rx: 16, ry: -16, dx: -90, dy: 90 },
-  { r: 2, rx: 22, ry: 8, dx: 10, dy: 40 },
-  { r: 7, rx: 12, ry: 22, dx: 110, dy: 110 },
+  { r: -6, rx: 10, ry: -14, dx: -162, dy: -107 },
+  { r: 4, rx: 8, ry: 10, dx: -55, dy: -113 },
+  { r: -3, rx: 10, ry: -8, dx: 55, dy: -110 },
+  { r: 6, rx: 8, ry: 14, dx: 162, dy: -104 },
+  { r: -5, rx: 10, ry: -16, dx: -172, dy: 3 },
+  { r: 4, rx: 8, ry: 16, dx: 172, dy: -3 },
+  { r: -4, rx: 10, ry: -10, dx: -107, dy: 107 },
+  { r: 2, rx: 12, ry: 4, dx: 0, dy: 0 },
+  { r: 5, rx: 8, ry: 12, dx: 107, dy: 110 },
 ];
 
 function Card({ c, onOpen }: { c: Video; onOpen: (v: Video) => void }) {
@@ -70,7 +71,7 @@ function Card({ c, onOpen }: { c: Video; onOpen: (v: Video) => void }) {
       type="button"
       onClick={() => onOpen(c)}
       aria-label={`Play podcast: ${c.name}`}
-      className="group block w-full rounded-[6px] border border-ink/10 bg-white p-2 text-left shadow-[0_24px_48px_-24px_rgba(11,13,18,0.45)] outline-none transition-shadow duration-300 hover:shadow-[0_30px_60px_-24px_rgba(11,13,18,0.55)] focus-visible:ring-2 focus-visible:ring-accent"
+      className="group block w-full rounded-[6px] border border-ink/10 bg-white p-2 text-left outline-none focus-visible:ring-2 focus-visible:ring-accent"
     >
       <span className="relative block aspect-video overflow-hidden rounded-[4px] bg-sunken">
         <Image
@@ -122,40 +123,51 @@ export function Spotlight() {
         "(min-width: 1024px) and (prefers-reduced-motion: no-preference)",
         () => {
           // one 3D pile in the middle drifts out to the edges, all together,
-          // flattening as it goes; scrubbed by the scroll through the held screen
-          gsap.fromTo(
-            q("[data-card]"),
-            {
-              x: (i, el) =>
-                ((50 - Number(el.dataset.x)) / 100) * layer.offsetWidth +
-                PILE[i].dx,
-              y: (i, el) =>
-                ((PILE_Y - Number(el.dataset.y)) / 100) * layer.offsetHeight +
-                PILE[i].dy,
-              rotation: (i, el) => PILE[i].r - Number(el.dataset.rot),
-              rotationX: (i) => PILE[i].rx,
-              rotationY: (i) => PILE[i].ry,
-              scale: 1.12,
-              transformPerspective: 1200,
+          // flattening as it goes; scrubbed by the scroll through the held
+          // screen. Each card has its own tween in one timeline (rather than one
+          // staggered tween) so every card starts in the pile: with a stagger,
+          // GSAP only set a card's piled starting state once its turn came, and
+          // the later cards sat spread out from the start.
+          const cards = gsap.utils.toArray<HTMLElement>(q("[data-card]"));
+          const tl = gsap.timeline({
+            scrollTrigger: {
+              trigger: track,
+              start: "top top",
+              end: "bottom bottom",
+              scrub: 1,
+              invalidateOnRefresh: true,
             },
-            {
-              x: 0,
-              y: 0,
-              rotation: 0,
-              rotationX: 0,
-              rotationY: 0,
-              scale: 1,
-              ease: "power1.inOut",
-              stagger: 0.03,
-              scrollTrigger: {
-                trigger: track,
-                start: "top top",
-                end: "bottom bottom",
-                scrub: 1,
-                invalidateOnRefresh: true,
+          });
+          cards.forEach((el, i) => {
+            tl.fromTo(
+              el,
+              {
+                x: () =>
+                  ((50 - Number(el.dataset.x)) / 100) * layer.offsetWidth +
+                  PILE[i].dx,
+                y: () =>
+                  ((PILE_Y - Number(el.dataset.y)) / 100) * layer.offsetHeight +
+                  PILE[i].dy,
+                rotation: PILE[i].r - Number(el.dataset.rot),
+                rotationX: PILE[i].rx,
+                rotationY: PILE[i].ry,
+                scale: 0.96,
+                transformPerspective: 1200,
               },
-            },
-          );
+              {
+                x: 0,
+                y: 0,
+                rotation: 0,
+                rotationX: 0,
+                rotationY: 0,
+                scale: 1,
+                ease: "power1.inOut",
+                duration: 1,
+                immediateRender: true,
+              },
+              i * 0.03,
+            );
+          });
         },
       );
 

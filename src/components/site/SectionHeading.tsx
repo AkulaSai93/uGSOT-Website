@@ -60,7 +60,11 @@ export function SectionHeading({
         const q = gsap.utils.selector(ref);
         const tl = gsap.timeline({
           defaults: { ease: "expo.out" },
-          scrollTrigger: { trigger: ref.current, start: "top 85%", toggleActions: "play none none none" },
+          scrollTrigger: {
+            trigger: ref.current,
+            start: "top 85%",
+            toggleActions: "play none none none",
+          },
         });
         tl.fromTo(
           q("[data-heading-word]"),
@@ -78,11 +82,14 @@ export function SectionHeading({
     { scope: ref },
   );
 
+  // each word in its own mask, with real spaces between them, so the heading
+  // reads, selects and copies as one line of text
   const words = (text: string | undefined, accentWord: boolean) =>
     (text ?? "")
       .split(" ")
       .filter(Boolean)
-      .map((w, i) => (
+      .flatMap((w, i) => [
+        i > 0 ? " " : null,
         <MaskWord
           key={`${w}-${i}`}
           className={
@@ -92,8 +99,8 @@ export function SectionHeading({
           }
         >
           {w}
-        </MaskWord>
-      ));
+        </MaskWord>,
+      ]);
 
   const centred = align === "center";
 
@@ -106,15 +113,11 @@ export function SectionHeading({
         id={id}
         className={`font-display font-bold leading-[1.15] tracking-[-0.03em] text-[color:var(--heading-fg,var(--ink))] ${SIZE[size]}`}
       >
-        <span className="sr-only">
-          {[title, accent, after].filter(Boolean).join(" ")}
-        </span>
-        <span aria-hidden className={`flex flex-wrap gap-x-[0.24em] ${centred ? "justify-center" : ""}`}>
-          {words(title, false)}
-          {breakBeforeAccent && <span aria-hidden className="h-0 basis-full" />}
-          {words(accent, true)}
-          {words(after, false)}
-        </span>
+        {words(title, false)}
+        {accent && (breakBeforeAccent ? <br /> : " ")}
+        {words(accent, true)}
+        {after && " "}
+        {words(after, false)}
       </h2>
       {intro && (
         <p
