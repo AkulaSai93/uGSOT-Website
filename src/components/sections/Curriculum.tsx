@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
@@ -13,21 +13,22 @@ gsap.registerPlugin(ScrollTrigger, useGSAP);
  * "Build Industry-Preferred Skills Through Practical Learning"
  *
  * Copy, subjects and skills are sot.upgrad.com's; project descriptions are
- * shortened to one line each.
+ * shortened to one line each. Project pictures are Figma AI illustrations in
+ * sot.upgrad.com's flat red-and-grey style (/images/curriculum/v3).
  *
- * Layout combines two references:
- *  - left, from mastersunion.org ("Hands-on Learning"): the four years scroll
- *    past as tall blocks hung on a vertical timeline, each with a badge,
- *    title and a numbered list (the year's subjects)
- *  - right, from scaler.com ("Future-Proof Curriculum"): a sticky panel with
- *    the active year's title, a project carousel and skill chips
+ * Layout: the four years as four large cards, each in its own soft tint (the
+ * pink, peach, blue and green of the stacked cards on sot.upgrad.com/catalyst),
+ * that stack as you scroll — each pins under the nav, and the next slides up over it like
+ * the next sheet in a deck. On each card: the year's number large in red, its
+ * title and line, and its skills as chips on the left; on the right the
+ * year's subjects in two numbered columns and, beneath, its six projects in a
+ * sideways row of tiles (picture, title, line). Below lg the cards simply
+ * follow one another.
  *
- * The active year is whichever block's top has crossed 45% of the viewport,
- * tracked by one GSAP ScrollTrigger per block; the sticky panel cross-fades
- * to the new year with a GSAP tween. Below lg the panel is not
- * sticky: each year renders its own panel inline under its block.
- *
- * Type, corners and heading follow the site-wide section style.
+ * Motion (GSAP, scrubbed by the scroll): as a card is covered by the next it
+ * shrinks back a little and greys over (a veil, so it stays solid), so the
+ * deck reads in depth; the cards rise
+ * in on first scroll.
  */
 type Project = { title: string; body: string; img: string };
 type Year = {
@@ -266,78 +267,35 @@ const YEARS: Year[] = [
   },
 ];
 
-/**
- * A project's picture: a Figma AI illustration in sot.upgrad.com's own style
- * (flat red, grey and charcoal on white with a faint circuit pattern), one per
- * project, in /images/curriculum/v3.
- */
-function ProjectArt({ img }: { img: string }) {
-  return (
-    <div className="relative aspect-[3/2] overflow-hidden rounded-[4px] bg-white">
-      <Image
-        src={`/images/curriculum/v3/${img}`}
-        alt=""
-        fill
-        sizes="320px"
-        className="object-cover transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/card:scale-[1.04]"
-      />
-    </div>
-  );
-}
+/** each year's card colour, the soft tints sot.upgrad.com/catalyst uses for
+ *  its stacked cards: pink, peach, blue, green */
+const TINTS = ["#fce9eb", "#fff7ec", "#f1f6ff", "#eaf4ec"];
 
-/** line icons for the timeline badges, one per year */
-function YearIcon({ k }: { k: string }) {
-  const paths: Record<string, ReactNode> = {
-    // foundations: stacked blocks
-    y1: <path d="M4 15h7v5H4zM13 15h7v5h-7zM8.5 9h7v5h-7zM12 4l3 3-3 1-3-1z" />,
-    // core tech: chip
-    y2: (
-      <>
-        <rect x="7" y="7" width="10" height="10" rx="1.5" />
-        <path d="M10 3v3M14 3v3M10 18v3M14 18v3M3 10h3M3 14h3M18 10h3M18 14h3" />
-      </>
-    ),
-    // AI & quantum: atom
-    y3: (
-      <>
-        <circle cx="12" cy="12" r="1.6" />
-        <ellipse cx="12" cy="12" rx="9" ry="3.6" />
-        <ellipse cx="12" cy="12" rx="9" ry="3.6" transform="rotate(60 12 12)" />
-        <ellipse
-          cx="12"
-          cy="12"
-          rx="9"
-          ry="3.6"
-          transform="rotate(120 12 12)"
+/** one project: its picture, title and line */
+function ProjectTile({ p }: { p: Project }) {
+  return (
+    <li className="group/tile w-[210px] shrink-0 snap-start sm:w-[230px]">
+      <div className="relative aspect-[3/2] overflow-hidden rounded-[6px] border border-ink/10 bg-white">
+        <Image
+          src={`/images/curriculum/v3/${p.img}`}
+          alt=""
+          fill
+          sizes="240px"
+          className="object-cover transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/tile:scale-[1.05]"
         />
-      </>
-    ),
-    // industry & innovation: briefcase
-    y4: (
-      <>
-        <rect x="3.5" y="7.5" width="17" height="12" rx="2" />
-        <path d="M9 7.5V5.5a1.5 1.5 0 0 1 1.5-1.5h3A1.5 1.5 0 0 1 15 5.5v2M3.5 12.5h17" />
-      </>
-    ),
-  };
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className="size-5"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      {paths[k]}
-    </svg>
+      </div>
+      <h5 className="mt-3 line-clamp-2 text-[14px] font-semibold leading-snug text-ink">
+        {p.title}
+      </h5>
+      <p className="mt-1 line-clamp-2 text-[13px] leading-snug text-body">
+        {p.body}
+      </p>
+    </li>
   );
 }
 
-/** small uppercase label used for each block of the panel */
-function PanelLabel({ children }: { children: ReactNode }) {
+/** small grey label over each block of a card */
+function Label({ children }: { children: ReactNode }) {
   return (
     <p className="text-[12px] font-semibold uppercase tracking-[0.1em] text-muted">
       {children}
@@ -345,167 +303,170 @@ function PanelLabel({ children }: { children: ReactNode }) {
   );
 }
 
-/**
- * Detail panel, structured after scaler.com's "Future-Proof Curriculum"
- * (year title, project carousel, skills) but kept quiet: one white surface,
- * uppercase labels, project illustrations in sot.upgrad.com's style and
- * plain chips.
- */
-function YearPanel({ year, index }: { year: Year; index: number }) {
-  const rowRef = useRef<HTMLUListElement | null>(null);
-  // which overlay arrows to show — none at an end of the row
-  const [edges, setEdges] = useState({ start: true, end: false });
-  const syncEdges = () => {
-    const row = rowRef.current;
-    if (!row) return;
-    setEdges({
-      start: row.scrollLeft <= 4,
-      end: row.scrollLeft + row.clientWidth >= row.scrollWidth - 4,
-    });
-  };
+/** a year's card */
+function YearCard({ year, index }: { year: Year; index: number }) {
+  const row = useRef<HTMLUListElement>(null);
   const scrollRow = (dir: 1 | -1) =>
-    rowRef.current?.scrollBy({
-      left: dir * (rowRef.current.clientWidth - 40),
-      behavior: "smooth",
-    });
+    row.current?.scrollBy({ left: dir * 250, behavior: "smooth" });
 
   return (
-    <div className="overflow-hidden rounded-[6px] border border-black/[0.08] bg-white">
-      <div className="px-7 pt-6">
-        <p className="text-[13px] font-semibold text-[#e6161f]">
-          {year.label}
-          <span className="ml-2 font-medium text-muted">
-            {String(index + 1).padStart(2, "0")} /{" "}
-            {String(YEARS.length).padStart(2, "0")}
-          </span>
+    <article
+      data-card
+      style={{ background: TINTS[index % TINTS.length] }}
+      className="relative grid origin-top gap-8 rounded-[6px] border border-ink/[0.06] p-6 shadow-[0_24px_48px_-32px_rgba(11,13,18,0.25)] sm:p-8 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.6fr)] lg:gap-12 lg:p-10"
+    >
+      {/* the veil that dims the card as the next one covers it */}
+      <span
+        data-veil
+        aria-hidden
+        className="pointer-events-none absolute inset-0 z-10 rounded-[6px] bg-[#eceef2]/70 opacity-0"
+      />
+      {/* left: the year, its title and line, its skills */}
+      <div className="flex flex-col">
+        <p className="font-[family-name:var(--font-bricolage)] text-[clamp(3rem,5vw,4.5rem)] font-semibold leading-none tracking-[-0.03em] text-accent">
+          {String(index + 1).padStart(2, "0")}
         </p>
-        <h3 className="mt-2 font-display text-[24px] font-bold leading-tight tracking-[-0.02em] text-ink">
+        <p className="mt-3 text-[13px] font-semibold text-ink/60">
+          {year.label}
+        </p>
+        <h3 className="mt-1 font-display text-[clamp(1.375rem,2vw,1.75rem)] font-bold leading-tight tracking-[-0.02em] text-ink">
           {year.title}
         </h3>
-        <p className="mt-2 text-[14px] leading-relaxed text-body">
+        <p className="mt-2.5 text-[14.5px] leading-relaxed text-body">
           {year.body}
         </p>
+
+        <div className="mt-8 lg:mt-auto">
+          <Label>Skills you&apos;ll build</Label>
+          <ul className="mt-3 flex flex-wrap gap-2">
+            {year.skills.map((sk) => (
+              <li
+                key={sk}
+                className="rounded-[4px] bg-white px-2.5 py-1.5 text-[12.5px] font-medium text-ink"
+              >
+                {sk}
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
 
-      <div className="mt-5 px-7">
-        <PanelLabel>Projects you&apos;ll be working on</PanelLabel>
-      </div>
+      {/* right: subjects, then projects */}
+      <div className="min-w-0">
+        <Label>Subjects</Label>
+        <ol className="mt-3 grid gap-x-8 gap-y-2.5 sm:grid-cols-2">
+          {year.subjects.map((sub, n) => (
+            <li
+              key={sub}
+              className="flex items-baseline gap-3 text-[14px] leading-snug text-ink"
+            >
+              <span className="w-5 shrink-0 font-[family-name:var(--font-bricolage)] text-[12.5px] font-semibold text-accent">
+                {String(n + 1).padStart(2, "0")}
+              </span>
+              {sub}
+            </li>
+          ))}
+        </ol>
 
-      {/* Carousel with Scaler's floating arrows: a round translucent button
-          over the edge card, level with the images. */}
-      <div className="relative mt-4">
+        <div className="mt-8 flex items-center justify-between">
+          <Label>Projects you&apos;ll be working on</Label>
+          <div className="hidden gap-1.5 sm:flex">
+            {([-1, 1] as const).map((dir) => (
+              <button
+                key={dir}
+                type="button"
+                onClick={() => scrollRow(dir)}
+                aria-label={dir < 0 ? "Previous projects" : "Next projects"}
+                className="grid size-8 place-items-center rounded-[6px] border border-ink/10 bg-white text-ink transition-colors hover:border-ink/30"
+              >
+                <svg
+                  viewBox="0 0 16 16"
+                  className="size-4"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  aria-hidden
+                >
+                  <path d={dir < 0 ? "M10 3 5 8l5 5" : "m6 3 5 5-5 5"} />
+                </svg>
+              </button>
+            ))}
+          </div>
+        </div>
         <ul
-          ref={rowRef}
-          onScroll={syncEdges}
-          className="flex snap-x snap-mandatory scroll-px-7 gap-4 overflow-x-auto px-7 pb-1 [scrollbar-width:none]"
+          ref={row}
+          className="mt-4 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-1 [scrollbar-width:none]"
         >
           {year.projects.map((p) => (
-            <li
-              key={p.title}
-              className="group/card w-[calc((100%-32px)/3)] min-w-[220px] shrink-0 snap-start rounded-[6px] border border-black/[0.1] bg-white p-4"
-            >
-              <ProjectArt img={p.img} />
-              <h4 className="mt-3.5 line-clamp-2 min-h-[2lh] font-display text-[16px] font-bold leading-snug tracking-[-0.01em] text-ink">
-                {p.title}
-              </h4>
-              <p className="mt-1.5 text-[13.5px] leading-snug text-[#616161]">
-                {p.body}
-              </p>
-            </li>
-          ))}
-        </ul>
-
-        {([-1, 1] as const).map((dir) =>
-          (dir < 0 ? edges.start : edges.end) ? null : (
-            <button
-              key={dir}
-              type="button"
-              onClick={() => scrollRow(dir)}
-              aria-label={dir < 0 ? "Previous projects" : "Next projects"}
-              className={`absolute top-[70px] grid size-11 place-items-center rounded-[6px] bg-black/30 text-white backdrop-blur-sm transition-colors hover:bg-black/50 ${
-                dir < 0 ? "left-3" : "right-3"
-              }`}
-            >
-              <svg
-                viewBox="0 0 16 16"
-                className="size-5"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-              >
-                <path d={dir < 0 ? "M10 3 5 8l5 5" : "m6 3 5 5-5 5"} />
-              </svg>
-            </button>
-          ),
-        )}
-      </div>
-
-      <div className="mx-7 mt-5 border-t border-black/[0.06] pb-6 pt-5">
-        <PanelLabel>Skills you&apos;ll build</PanelLabel>
-        <ul className="mt-3 flex flex-wrap gap-2">
-          {year.skills.map((s) => (
-            <li
-              key={s}
-              className="rounded-[4px] border border-ink/10 bg-canvas px-3 py-1.5 text-[13px] font-medium text-ink"
-            >
-              {s}
-            </li>
+            <ProjectTile key={p.title} p={p} />
           ))}
         </ul>
       </div>
-    </div>
+    </article>
   );
 }
 
 export function Curriculum() {
-  const blockRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const [active, setActive] = useState(0);
-  const stickyRef = useRef<HTMLDivElement | null>(null);
-  const panelRef = useRef<HTMLDivElement | null>(null);
+  const root = useRef<HTMLElement>(null);
 
-  // active year: one ScrollTrigger per block, firing as its top crosses 45%
-  useEffect(() => {
-    const triggers = blockRefs.current.map((el, i) =>
-      el
-        ? ScrollTrigger.create({
-            trigger: el,
-            start: "top 45%",
-            onEnter: () => setActive(i),
-            onLeaveBack: () => setActive(Math.max(i - 1, 0)),
-          })
-        : null,
-    );
-    return () => triggers.forEach((t) => t?.kill());
-  }, []);
-
-  // On short windows the panel can be taller than the space under the navbar;
-  // pin it higher so its bottom edge stays on screen.
-  useEffect(() => {
-    const place = () => {
-      const panel = stickyRef.current;
-      if (!panel) return;
-      panel.style.top = `${Math.min(84, window.innerHeight - panel.offsetHeight - 16)}px`;
-    };
-    place();
-    window.addEventListener("resize", place);
-    return () => window.removeEventListener("resize", place);
-  }, [active]);
-
-  // panel swap: the new year's panel rises in
   useGSAP(
     () => {
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-      gsap.fromTo(
-        panelRef.current,
-        { y: 16, autoAlpha: 0 },
-        { y: 0, autoAlpha: 1, duration: 0.6, ease: "expo.out" },
+      const q = gsap.utils.selector(root);
+      const mm = gsap.matchMedia();
+      mm.add("(prefers-reduced-motion: no-preference)", () => {
+        gsap.fromTo(
+          q("[data-slot]"),
+          { y: 40, autoAlpha: 0 },
+          {
+            y: 0,
+            autoAlpha: 1,
+            duration: 1,
+            ease: "expo.out",
+            stagger: 0.1,
+            scrollTrigger: {
+              trigger: q("[data-deck]")[0],
+              start: "top 85%",
+              toggleActions: "play none none none",
+            },
+          },
+        );
+      });
+      // lg+: each card shrinks back and dims as the next slides over it
+      mm.add(
+        "(min-width: 1024px) and (prefers-reduced-motion: no-preference)",
+        () => {
+          const slots = q("[data-slot]");
+          slots.forEach((slot, i) => {
+            const next = slots[i + 1];
+            if (!next) return;
+            const st = {
+              trigger: next,
+              start: "top bottom",
+              end: "top 100px",
+              scrub: true,
+            };
+            gsap.to(slot.querySelector("[data-card]"), {
+              scale: 0.94,
+              ease: "none",
+              scrollTrigger: st,
+            });
+            // a veil rather than opacity, so the card stays solid and the one
+            // beneath never shows through
+            gsap.fromTo(
+              slot.querySelector("[data-veil]"),
+              { opacity: 0 },
+              { opacity: 1, ease: "none", scrollTrigger: { ...st } },
+            );
+          });
+        },
       );
+      return () => mm.revert();
     },
-    { dependencies: [active] },
+    { scope: root },
   );
 
   return (
-    <section id="curriculum" className="bg-canvas py-20 lg:py-28">
+    <section ref={root} id="curriculum" className="bg-canvas py-20 lg:py-28">
       <div className="container-page">
         <SectionHeading
           title="Build Industry Preferred Skills Through"
@@ -514,88 +475,23 @@ export function Curriculum() {
           intro="A structured learning journey designed with input from industry experts."
         />
 
-        <div className="mt-16 grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,2.2fr)] lg:gap-12">
-          {/* Left: timeline of years (Masters' Union) */}
-          {/* min-w-0: without it the inline YearPanel carousel sets this grid
-              item's min width and the whole page scrolls sideways on phones. */}
-          <div className="relative min-w-0">
-            {/* the rail the badges hang on */}
-            <span
-              aria-hidden
-              className="absolute bottom-0 left-[19px] top-2 w-px bg-black/10"
-            />
-            {YEARS.map((year, i) => {
-              const on = i === active;
-              return (
-                <div
-                  key={year.key}
-                  ref={(el) => {
-                    blockRefs.current[i] = el;
-                  }}
-                  className="relative pb-16 pl-14 last:pb-0 lg:min-h-[78vh] lg:last:min-h-[70vh]"
-                >
-                  <span
-                    className={`absolute left-0 top-0 grid size-10 place-items-center rounded-full border text-[13px] font-semibold transition-colors duration-300 ${
-                      on
-                        ? "border-[#e6161f] bg-[#e6161f] text-white"
-                        : "border-black/15 bg-white text-ink"
-                    }`}
-                  >
-                    <YearIcon k={year.key} />
-                  </span>
-
-                  <div
-                    className={`transition-opacity duration-300 ${
-                      on ? "opacity-100" : "lg:opacity-40"
-                    }`}
-                  >
-                    <span className="inline-block rounded-[4px] border border-ink/10 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-ink">
-                      {year.label}
-                    </span>
-                    <h3 className="mt-3 font-display text-[clamp(1.25rem,1.7vw,1.5rem)] font-bold leading-tight tracking-[-0.02em] text-ink">
-                      {year.title}
-                    </h3>
-
-                    <p className="mt-6 text-[12px] font-semibold uppercase tracking-[0.1em] text-muted">
-                      Subjects
-                    </p>
-                    <ol className="mt-3 space-y-2.5">
-                      {year.subjects.map((s, n) => (
-                        <li
-                          key={s}
-                          className="flex items-start gap-3 text-[14px] leading-snug text-ink"
-                        >
-                          <span className="mt-px grid size-6 shrink-0 place-items-center rounded-full border border-black/15 text-[11px] font-semibold">
-                            {n + 1}
-                          </span>
-                          {s}
-                        </li>
-                      ))}
-                    </ol>
-                  </div>
-
-                  {/* below lg the panel sits inline with its year */}
-                  <div className="mt-8 lg:hidden">
-                    <YearPanel year={year} index={i} />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Right: sticky detail panel (Scaler) */}
-          <div className="hidden lg:block">
-            <div ref={stickyRef} className="sticky top-[84px]">
-              <div ref={panelRef}>
-                {/* keyed so each year's carousel starts at its first project */}
-                <YearPanel
-                  key={YEARS[active].key}
-                  year={YEARS[active]}
-                  index={active}
-                />
+        {/* the deck: each year pins under the nav, the next stacking over it */}
+        <div
+          data-deck
+          className="mt-14 flex flex-col gap-6 lg:mt-16 lg:gap-[18vh]"
+        >
+          {YEARS.map((year, i) => (
+            <div
+              key={year.key}
+              data-slot
+              className="lg:sticky"
+              style={{ top: `calc(92px + ${i * 14}px)` }}
+            >
+              <div className="origin-top">
+                <YearCard year={year} index={i} />
               </div>
             </div>
-          </div>
+          ))}
         </div>
       </div>
     </section>
