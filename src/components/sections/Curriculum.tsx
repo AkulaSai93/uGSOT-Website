@@ -266,6 +266,25 @@ const YEARS: Year[] = [
   },
 ];
 
+/**
+ * A project's picture: a Figma AI illustration in sot.upgrad.com's own style
+ * (flat red, grey and charcoal on white with a faint circuit pattern), one per
+ * project, in /images/curriculum/v3.
+ */
+function ProjectArt({ img }: { img: string }) {
+  return (
+    <div className="relative aspect-[3/2] overflow-hidden rounded-[4px] bg-white">
+      <Image
+        src={`/images/curriculum/v3/${img}`}
+        alt=""
+        fill
+        sizes="320px"
+        className="object-cover transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/card:scale-[1.04]"
+      />
+    </div>
+  );
+}
+
 /** line icons for the timeline badges, one per year */
 function YearIcon({ k }: { k: string }) {
   const paths: Record<string, ReactNode> = {
@@ -284,7 +303,13 @@ function YearIcon({ k }: { k: string }) {
         <circle cx="12" cy="12" r="1.6" />
         <ellipse cx="12" cy="12" rx="9" ry="3.6" />
         <ellipse cx="12" cy="12" rx="9" ry="3.6" transform="rotate(60 12 12)" />
-        <ellipse cx="12" cy="12" rx="9" ry="3.6" transform="rotate(120 12 12)" />
+        <ellipse
+          cx="12"
+          cy="12"
+          rx="9"
+          ry="3.6"
+          transform="rotate(120 12 12)"
+        />
       </>
     ),
     // industry & innovation: briefcase
@@ -323,7 +348,8 @@ function PanelLabel({ children }: { children: ReactNode }) {
 /**
  * Detail panel, structured after scaler.com's "Future-Proof Curriculum"
  * (year title, project carousel, skills) but kept quiet: one white surface,
- * uppercase labels, full-bleed project images and plain chips.
+ * uppercase labels, project illustrations in sot.upgrad.com's style and
+ * plain chips.
  */
 function YearPanel({ year, index }: { year: Year; index: number }) {
   const rowRef = useRef<HTMLUListElement | null>(null);
@@ -338,7 +364,10 @@ function YearPanel({ year, index }: { year: Year; index: number }) {
     });
   };
   const scrollRow = (dir: 1 | -1) =>
-    rowRef.current?.scrollBy({ left: dir * (rowRef.current.clientWidth - 40), behavior: "smooth" });
+    rowRef.current?.scrollBy({
+      left: dir * (rowRef.current.clientWidth - 40),
+      behavior: "smooth",
+    });
 
   return (
     <div className="overflow-hidden rounded-[6px] border border-black/[0.08] bg-white">
@@ -346,7 +375,8 @@ function YearPanel({ year, index }: { year: Year; index: number }) {
         <p className="text-[13px] font-semibold text-[#e6161f]">
           {year.label}
           <span className="ml-2 font-medium text-muted">
-            {String(index + 1).padStart(2, "0")} / {String(YEARS.length).padStart(2, "0")}
+            {String(index + 1).padStart(2, "0")} /{" "}
+            {String(YEARS.length).padStart(2, "0")}
           </span>
         </p>
         <h3 className="mt-2 font-display text-[24px] font-bold leading-tight tracking-[-0.02em] text-ink">
@@ -372,19 +402,9 @@ function YearPanel({ year, index }: { year: Year; index: number }) {
           {year.projects.map((p) => (
             <li
               key={p.title}
-              className="w-[calc((100%-32px)/3)] min-w-[220px] shrink-0 snap-start rounded-[6px] border border-black/[0.1] bg-white p-4"
+              className="group/card w-[calc((100%-32px)/3)] min-w-[220px] shrink-0 snap-start rounded-[6px] border border-black/[0.1] bg-white p-4"
             >
-              <div className="relative aspect-[1.68] overflow-hidden rounded-[4px] bg-sunken">
-                <Image
-                  src={`/images/curriculum/${p.img}`}
-                  alt=""
-                  fill
-                  sizes="320px"
-                  // the generated art sits small in its frame; zoom in so the
-                  // browser window fills the tile as in the reference
-                  className="scale-[1.45] object-cover"
-                />
-              </div>
+              <ProjectArt img={p.img} />
               <h4 className="mt-3.5 line-clamp-2 min-h-[2lh] font-display text-[16px] font-bold leading-snug tracking-[-0.01em] text-ink">
                 {p.title}
               </h4>
@@ -402,11 +422,17 @@ function YearPanel({ year, index }: { year: Year; index: number }) {
               type="button"
               onClick={() => scrollRow(dir)}
               aria-label={dir < 0 ? "Previous projects" : "Next projects"}
-              className={`absolute top-[54px] grid size-11 place-items-center rounded-[6px] bg-black/30 text-white backdrop-blur-sm transition-colors hover:bg-black/50 ${
+              className={`absolute top-[70px] grid size-11 place-items-center rounded-[6px] bg-black/30 text-white backdrop-blur-sm transition-colors hover:bg-black/50 ${
                 dir < 0 ? "left-3" : "right-3"
               }`}
             >
-              <svg viewBox="0 0 16 16" className="size-5" fill="none" stroke="currentColor" strokeWidth="1.8">
+              <svg
+                viewBox="0 0 16 16"
+                className="size-5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+              >
                 <path d={dir < 0 ? "M10 3 5 8l5 5" : "m6 3 5 5-5 5"} />
               </svg>
             </button>
@@ -535,7 +561,10 @@ export function Curriculum() {
                     </p>
                     <ol className="mt-3 space-y-2.5">
                       {year.subjects.map((s, n) => (
-                        <li key={s} className="flex items-start gap-3 text-[14px] leading-snug text-ink">
+                        <li
+                          key={s}
+                          className="flex items-start gap-3 text-[14px] leading-snug text-ink"
+                        >
                           <span className="mt-px grid size-6 shrink-0 place-items-center rounded-full border border-black/15 text-[11px] font-semibold">
                             {n + 1}
                           </span>
@@ -543,7 +572,6 @@ export function Curriculum() {
                         </li>
                       ))}
                     </ol>
-
                   </div>
 
                   {/* below lg the panel sits inline with its year */}
@@ -560,7 +588,11 @@ export function Curriculum() {
             <div ref={stickyRef} className="sticky top-[84px]">
               <div ref={panelRef}>
                 {/* keyed so each year's carousel starts at its first project */}
-                <YearPanel key={YEARS[active].key} year={YEARS[active]} index={active} />
+                <YearPanel
+                  key={YEARS[active].key}
+                  year={YEARS[active]}
+                  index={active}
+                />
               </div>
             </div>
           </div>
