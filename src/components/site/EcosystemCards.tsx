@@ -146,81 +146,164 @@ const GROUP_H = 206.29;
 /** design px -> container-query width units, so the whole group scales as one */
 const cq = (px: number) => `${((px * 100) / GROUP_W).toFixed(4)}cqw`;
 
-export function EcosystemCards() {
+/** a card's logo, placed and cropped as in the design, sized in shares of
+ *  the card face so it scales with whatever size the face is */
+function CardFace({ c }: { c: Card }) {
   return (
     <div
-      className="mx-auto w-full"
-      style={{ maxWidth: GROUP_W, containerType: "inline-size" }}
+      className="absolute -translate-x-1/2 -translate-y-1/2"
+      style={{
+        width: `${(c.iw / c.cw) * 100}%`,
+        height: `${(c.ih / c.ch) * 100}%`,
+        left: `calc(50% + ${(c.dx / c.cw) * 100}%)`,
+        top: `calc(50% + ${(c.dy / c.ch) * 100}%)`,
+      }}
     >
-      <ul className="relative w-full" style={{ height: cq(GROUP_H) }}>
-        {CARDS.map((c) => (
-          <li
-            key={c.name}
-            data-reveal-item
-            className="group absolute flex items-center justify-center hover:z-20"
+      {c.crop ? (
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={`/images/ecosystem/${c.file}`}
+            alt={c.name}
+            className="absolute max-w-none"
             style={{
-              left: cq(c.ml),
-              top: cq(c.mt),
-              width: cq(c.bw),
-              height: cq(c.bh),
+              width: c.crop.w,
+              height: c.crop.h,
+              left: c.crop.left,
+              top: c.crop.top,
             }}
-          >
-            {/* translateY sits left of rotate so the card lifts straight up in
-                the group's space rather than along its own tilted axis. */}
-            <div
-              className="flex-none transition-transform duration-300 ease-out [transform:translateY(var(--lift,0px))_rotate(var(--rot))_scale(var(--sc,1))] group-hover:[--lift:-13px] group-hover:[--sc:1.045]"
-              style={{ ["--rot" as string]: `${c.rotate}deg` }}
+          />
+        </div>
+      ) : (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={`/images/ecosystem/${c.file}`}
+          alt={c.name}
+          className="pointer-events-none absolute inset-0 size-full max-w-none object-cover"
+        />
+      )}
+    </div>
+  );
+}
+
+/**
+ * The phone cluster: the six cards as a tight, tilted pile of app-icon
+ * tiles (the client's reference) — two rows of three, each card a little
+ * larger than its cell so neighbours overlap, every one at its own angle and
+ * nudged off the grid. `z` sets which card sits on
+ * top where they overlap.
+ */
+const CLUSTER = [
+  { rot: -14, x: 2, y: 8, z: 1 },
+  { rot: 7, x: 0, y: -2, z: 3 },
+  { rot: 13, x: -2, y: 8, z: 2 },
+  { rot: 10, x: 2, y: -8, z: 2 },
+  { rot: -6, x: -2, y: -4, z: 3 },
+  { rot: -12, x: 4, y: -10, z: 4 },
+];
+
+export function EcosystemCards() {
+  return (
+    <>
+      {/* phones: the cluster */}
+      <ul className="mx-auto grid w-full max-w-[380px] grid-cols-3 px-3 py-2 sm:hidden">
+        {CARDS.map((c, i) => {
+          const k = CLUSTER[i];
+          return (
+            <li
+              key={c.name}
+              data-reveal-item
+              className="relative flex justify-center"
+              style={{ zIndex: k.z }}
             >
               <div
-                className="relative overflow-clip border-solid border-black bg-white transition-shadow duration-300 group-hover:shadow-[0_14px_26px_-10px_rgba(11,13,18,0.32)]"
+                className="relative aspect-square w-[106%] shrink-0 overflow-clip rounded-[18px] border-solid border-black bg-white"
                 style={{
-                  width: cq(c.cw),
-                  height: cq(c.ch),
-                  borderRadius: cq(c.radius),
-                  borderTopWidth: cq(1),
-                  borderLeftWidth: cq(1),
-                  borderRightWidth: cq(4.5),
-                  borderBottomWidth: cq(4.5),
+                  transform: `translate(${k.x}%, ${k.y}%) rotate(${k.rot}deg)`,
+                  borderWidth: "1px 3.5px 3.5px 1px",
                 }}
               >
+                <CardFace c={c} />
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+
+      <div
+        className="mx-auto w-full max-sm:hidden"
+        style={{ maxWidth: GROUP_W, containerType: "inline-size" }}
+      >
+        <ul className="relative w-full" style={{ height: cq(GROUP_H) }}>
+          {CARDS.map((c) => (
+            <li
+              key={c.name}
+              data-reveal-item
+              className="group absolute flex items-center justify-center hover:z-20"
+              style={{
+                left: cq(c.ml),
+                top: cq(c.mt),
+                width: cq(c.bw),
+                height: cq(c.bh),
+              }}
+            >
+              {/* translateY sits left of rotate so the card lifts straight up in
+                the group's space rather than along its own tilted axis. */}
+              <div
+                className="flex-none transition-transform duration-300 ease-out [transform:translateY(var(--lift,0px))_rotate(var(--rot))_scale(var(--sc,1))] group-hover:[--lift:-13px] group-hover:[--sc:1.045]"
+                style={{ ["--rot" as string]: `${c.rotate}deg` }}
+              >
                 <div
-                  className="absolute -translate-x-1/2 -translate-y-1/2"
+                  className="relative overflow-clip border-solid border-black bg-white transition-shadow duration-300 group-hover:shadow-[0_14px_26px_-10px_rgba(11,13,18,0.32)]"
                   style={{
-                    width: cq(c.iw),
-                    height: cq(c.ih),
-                    left: `calc(50% + ${cq(c.dx)})`,
-                    top: `calc(50% + ${cq(c.dy)})`,
+                    width: cq(c.cw),
+                    height: cq(c.ch),
+                    borderRadius: cq(c.radius),
+                    borderTopWidth: cq(1),
+                    borderLeftWidth: cq(1),
+                    borderRightWidth: cq(4.5),
+                    borderBottomWidth: cq(4.5),
                   }}
                 >
-                  {c.crop ? (
-                    <div className="pointer-events-none absolute inset-0 overflow-hidden">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <div
+                    className="absolute -translate-x-1/2 -translate-y-1/2"
+                    style={{
+                      width: cq(c.iw),
+                      height: cq(c.ih),
+                      left: `calc(50% + ${cq(c.dx)})`,
+                      top: `calc(50% + ${cq(c.dy)})`,
+                    }}
+                  >
+                    {c.crop ? (
+                      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={`/images/ecosystem/${c.file}`}
+                          alt={c.name}
+                          className="absolute max-w-none"
+                          style={{
+                            width: c.crop.w,
+                            height: c.crop.h,
+                            left: c.crop.left,
+                            top: c.crop.top,
+                          }}
+                        />
+                      </div>
+                    ) : (
+                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={`/images/ecosystem/${c.file}`}
                         alt={c.name}
-                        className="absolute max-w-none"
-                        style={{
-                          width: c.crop.w,
-                          height: c.crop.h,
-                          left: c.crop.left,
-                          top: c.crop.top,
-                        }}
+                        className="pointer-events-none absolute inset-0 size-full max-w-none object-cover"
                       />
-                    </div>
-                  ) : (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={`/images/ecosystem/${c.file}`}
-                      alt={c.name}
-                      className="pointer-events-none absolute inset-0 size-full max-w-none object-cover"
-                    />
-                  )}
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          </li>
-        ))}
-      </ul>
-    </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </>
   );
 }

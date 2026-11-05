@@ -42,7 +42,15 @@ gsap.registerPlugin(useGSAP);
 /** `fit` places each picture in the open panel (nearly square on desktop,
  *  taller than wide on phones): the wide AI & ML and Cloud pictures have their
  *  subject right of centre, so they sit to the right; the square Blockchain
- *  picture keeps its top chain link clear of the panel's top edge. */
+ *  picture keeps its top chain link clear of the panel's top edge.
+ *
+ *  `phone` is for those two wide pictures on phones, where a cover crop of the
+ *  near-square panel cut off the icons round the subject: the picture is
+ *  sized to the panel's width so the whole group (subject and its four
+ *  icons) fits across it, centred — `w` the picture's width and `left` its
+ *  offset, both as shares of the panel's width — and centred top to bottom,
+ *  the thin bands left above and below filled with the picture's own edge
+ *  colours (`bg`) so they don't show. */
 const SPECIALIZATIONS = [
   {
     title: "Artificial Intelligence & Machine Learning",
@@ -50,6 +58,7 @@ const SPECIALIZATIONS = [
     body: "Build intelligent systems that learn and adapt",
     key: "aiml",
     fit: "object-[70%_50%] lg:object-[96%_50%]",
+    phone: { w: "176%", left: "-67.4%", bg: "linear-gradient(180deg,#250d53,#33106a)" },
   },
   {
     title: "FullStack Web Development",
@@ -85,6 +94,7 @@ const SPECIALIZATIONS = [
     body: "Design scalable cloud-native architectures",
     key: "cloud",
     fit: "object-[70%_50%] lg:object-[92%_50%]",
+    phone: { w: "180%", left: "-69.7%", bg: "linear-gradient(180deg,#052661,#092c6a)" },
   },
 ] as const;
 
@@ -128,15 +138,32 @@ function Panel({
           `scale` property and would compound with GSAP's transform */}
       <div
         data-img
-        className={`absolute inset-0 -z-10 ${active ? "" : "opacity-55"}`}
+        className={`absolute inset-0 -z-10 max-lg:[background:var(--phone-bg)] ${active ? "" : "opacity-55"}`}
+        style={"phone" in spec ? { ["--phone-bg" as string]: spec.phone.bg } : undefined}
       >
-        <Image
-          src={`/images/specializations/v4/${spec.key}.jpg`}
-          alt=""
-          fill
-          sizes="(min-width: 1024px) 60vw, 100vw"
-          className={`object-cover ${spec.fit}`}
-        />
+        {"phone" in spec ? (
+          // phones: the whole picture, sized to the panel's width (see `phone`)
+          <div
+            className="absolute inset-0 max-lg:inset-auto max-lg:left-[var(--pl)] max-lg:top-1/2 max-lg:aspect-[1536/864] max-lg:w-[var(--pw)] max-lg:-translate-y-1/2"
+            style={{ ["--pw" as string]: spec.phone.w, ["--pl" as string]: spec.phone.left }}
+          >
+            <Image
+              src={`/images/specializations/v4/${spec.key}.jpg`}
+              alt=""
+              fill
+              sizes="(min-width: 1024px) 60vw, 180vw"
+              className={`object-cover ${spec.fit}`}
+            />
+          </div>
+        ) : (
+          <Image
+            src={`/images/specializations/v4/${spec.key}.jpg`}
+            alt=""
+            fill
+            sizes="(min-width: 1024px) 60vw, 100vw"
+            className={`object-cover ${spec.fit}`}
+          />
+        )}
       </div>
       {/* scrim: heavy at the bottom for the copy, lighter on the closed spines */}
       <span
@@ -282,7 +309,7 @@ export function Specializations() {
   const hoverEnd = () => window.clearTimeout(hoverTimer.current);
 
   return (
-    <section id="specializations" className="relative bg-canvas py-20 lg:py-28">
+    <section id="specializations" className="relative bg-canvas py-12 lg:py-28">
       <div className="container-page relative">
         <SectionHeading
           title="New-Gen Engineering"

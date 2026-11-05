@@ -24,9 +24,10 @@ gsap.registerPlugin(ScrollTrigger, useGSAP);
  * is, with the closing call in large type on its left, the ways to
  * reach us under it ("Get in touch" carries the hero CTA's sweeping
  * glow), and a thin bar of fine print along the foot. From
- * northtitan.framer.website: the page above lifts away to reveal it — on
- * desktop the footer is pinned beneath the page (sticky at the bottom, behind
- * it) so the last section slides up off it like a sheet.
+ * northtitan.framer.website: the page above lifts away to reveal it — the
+ * footer is pinned beneath the page (sticky at the bottom, behind it) so the
+ * last section slides up off it like a sheet; on phones too, where a footer
+ * taller than the screen is pinned so its top is uncovered first.
  *
  * Motion (GSAP, scrubbed by the scroll): as the footer is uncovered the
  * illustration settles from a slight zoom and brightens, and the words rise
@@ -107,6 +108,30 @@ export function Footer() {
     () => {
       const q = gsap.utils.selector(root);
       const mm = gsap.matchMedia();
+
+      // phones: the same pinned-beneath reveal, but the footer can be taller
+      // than the screen there, and pinned by its bottom edge its top would
+      // never show. So it is pinned by its bottom at (screen - its height):
+      // when it fits that is 0, the reveal exactly as on desktop; when it is
+      // taller it is uncovered from its top and then scrolls on to its foot.
+      mm.add("(max-width: 1023px)", () => {
+        const el = root.current!;
+        const pin = () =>
+          el.style.setProperty(
+            "--footer-pin",
+            `${Math.min(0, window.innerHeight - el.offsetHeight)}px`,
+          );
+        pin();
+        const ro = new ResizeObserver(pin);
+        ro.observe(el);
+        window.addEventListener("resize", pin);
+        return () => {
+          ro.disconnect();
+          window.removeEventListener("resize", pin);
+          el.style.removeProperty("--footer-pin");
+        };
+      });
+
       mm.add("(prefers-reduced-motion: no-preference)", () => {
         // uncovered as the page above slides off it
         gsap
@@ -140,7 +165,7 @@ export function Footer() {
     <footer
       ref={root}
       id="site-footer"
-      className="relative overflow-hidden bg-[#fbf6f1] text-ink lg:sticky lg:bottom-0 lg:z-0 lg:h-[100svh] lg:min-h-[640px]"
+      className="sticky bottom-[var(--footer-pin,0px)] z-0 overflow-hidden bg-[#fbf6f1] text-ink lg:bottom-0 lg:h-[100svh] lg:min-h-[640px]"
     >
       {/* the illustration, darkened on the left and along the foot so the
           words read on it */}

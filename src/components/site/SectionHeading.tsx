@@ -36,6 +36,8 @@ export function SectionHeading({
   after,
   intro,
   breakBeforeAccent = false,
+  phoneBreakBefore,
+  titleClassName = "",
   align = "center",
   size = "lg",
   className = "",
@@ -47,6 +49,11 @@ export function SectionHeading({
   intro?: ReactNode;
   /** start the accent phrase on its own line */
   breakBeforeAccent?: boolean;
+  /** below lg, break the line before this word of the title instead (and
+   *  keep the accent on the same line as the title's tail) */
+  phoneBreakBefore?: string;
+  /** extra classes for the h2, e.g. a phone font size that fits its lines */
+  titleClassName?: string;
   align?: "center" | "left";
   size?: keyof typeof SIZE;
   className?: string;
@@ -90,6 +97,9 @@ export function SectionHeading({
       .filter(Boolean)
       .flatMap((w, i) => [
         i > 0 ? " " : null,
+        !accentWord && w === phoneBreakBefore ? (
+          <br key={`br-${i}`} className="lg:hidden" />
+        ) : null,
         <MaskWord
           key={`${w}-${i}`}
           className={
@@ -111,10 +121,22 @@ export function SectionHeading({
     >
       <h2
         id={id}
-        className={`font-display font-bold leading-[1.15] tracking-[-0.03em] text-[color:var(--heading-fg,var(--ink))] ${SIZE[size]}`}
+        className={`font-display font-bold leading-[1.15] tracking-[-0.03em] text-[color:var(--heading-fg,var(--ink))] ${SIZE[size]} ${titleClassName}`}
       >
         {words(title, false)}
-        {accent && (breakBeforeAccent ? <br /> : " ")}
+        {accent &&
+          (breakBeforeAccent ? (
+            phoneBreakBefore ? (
+              <>
+                {" "}
+                <br className="max-lg:hidden" />
+              </>
+            ) : (
+              <br />
+            )
+          ) : (
+            " "
+          ))}
         {words(accent, true)}
         {after && " "}
         {words(after, false)}

@@ -202,7 +202,7 @@ export function Testimonials() {
     <section
       ref={root}
       id="testimonials"
-      className="overflow-x-clip bg-canvas pt-20 lg:pt-28"
+      className="overflow-x-clip bg-canvas pt-12 lg:pt-28"
     >
       <div className="container-page">
         <SectionHeading
@@ -318,7 +318,7 @@ export function Testimonials() {
       >
         <div
           data-rise
-          className="container-page flex flex-col items-start gap-7 md:flex-row md:items-center md:justify-between"
+          className="container-page flex flex-col items-center gap-7 text-center md:flex-row md:items-center md:justify-between md:text-left"
         >
           <div className="max-w-[560px]">
             <h3 className="font-display text-[clamp(1.375rem,2.2vw,1.875rem)] font-bold leading-[1.2] tracking-[-0.02em] text-white">

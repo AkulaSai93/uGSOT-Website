@@ -32,6 +32,8 @@ gsap.registerPlugin(useGSAP);
 const CAMPUSES = [
   {
     key: "ssahe",
+    /** phones: where the photo sits in its band (the two domes) */
+    phoneFit: "max-lg:object-[36%_50%]",
     name: "Sri Siddhartha Academy of Higher Education",
     tab: "Tumkuru",
     region: "Karnataka",
@@ -41,6 +43,8 @@ const CAMPUSES = [
   },
   {
     key: "adypu",
+    /** phones: where the photo sits in its band (the domed main block) */
+    phoneFit: "max-lg:object-[83%_50%]",
     name: "Ajeenkya DY Patil University",
     tab: "Pune",
     region: "Maharashtra",
@@ -182,7 +186,7 @@ export function Campuses() {
   const c = CAMPUSES[active];
 
   return (
-    <section id="campuses" className="bg-canvas py-20 lg:py-28">
+    <section id="campuses" className="bg-canvas py-12 lg:py-28">
       <div className="container-page">
         <SectionHeading
           title="Our"
@@ -198,7 +202,10 @@ export function Campuses() {
 
         <Reveal className="mt-14">
           <div ref={wrap}>
-            <div className="relative h-[clamp(560px,72vh,680px)] overflow-hidden rounded-[6px] bg-sunken">
+            {/* phones: the photo fills the frame, aimed at each campus's
+                buildings, with a light fade low down under the centred
+                details */}
+            <div className="relative h-[clamp(560px,72vh,680px)] overflow-hidden rounded-[6px] bg-sunken max-lg:h-[500px]">
               {CAMPUSES.map((campus, i) => (
                 <div
                   key={campus.key}
@@ -211,8 +218,9 @@ export function Campuses() {
                       src={`/images/campuses/${campus.key}.webp`}
                       alt={campus.name}
                       fill
-                      sizes="(min-width: 1280px) 1232px, 100vw"
-                      className="object-cover"
+                      // phones show the photo at about 2x the frame's width, larger on dense screens
+                      sizes="(min-width: 1280px) 1232px, (min-width: 1024px) 100vw, 1200px"
+                      className={`object-cover ${campus.phoneFit}`}
                       priority={i === 0}
                     />
                   </div>
@@ -253,10 +261,10 @@ export function Campuses() {
               {/* black fade along the bottom of the photo, under the details */}
               <span
                 aria-hidden
-                className="pointer-events-none absolute inset-x-0 bottom-0 z-[5] h-[60%] bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.45)_45%,rgba(0,0,0,0.85)_100%)]"
+                className="pointer-events-none absolute inset-x-0 bottom-0 z-[5] h-[60%] bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.45)_45%,rgba(0,0,0,0.85)_100%)] max-lg:h-[58%] max-lg:bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.35)_40%,rgba(0,0,0,0.78)_100%)]"
               />
               {/* details, white type straight on the photo's dark lower edge */}
-              <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col items-start gap-6 p-6 sm:p-8 lg:flex-row lg:items-end lg:justify-between lg:p-10">
+              <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col items-center gap-6 p-6 text-center sm:p-8 lg:flex-row lg:items-end lg:justify-between lg:p-10 lg:text-left">
                 <div className="max-w-[720px]">
                   <p data-line className="text-[11.5px] font-semibold uppercase tracking-[0.2em] text-white/70">
                     In collaboration with
@@ -267,7 +275,7 @@ export function Campuses() {
                   >
                     {c.name}
                   </h3>
-                  <p data-line className="mt-2.5 inline-flex items-center gap-2 text-[15px] text-white/85">
+                  <p data-line className="mt-2.5 inline-flex items-center gap-2 text-[15px] text-white/85 max-lg:justify-center">
                     <MapPin size={16} strokeWidth={2} aria-hidden />
                     {c.location}
                   </p>

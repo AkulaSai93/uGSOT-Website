@@ -147,7 +147,7 @@ export function Admission() {
   );
 
   return (
-    <section ref={root} id="admission" className="bg-canvas py-20 lg:py-28">
+    <section ref={root} id="admission" className="bg-canvas py-12 lg:py-28">
       <div className="container-page">
         <SectionHeading
           title="Admission"

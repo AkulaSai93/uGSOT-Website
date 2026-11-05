@@ -21,7 +21,7 @@ const STATS = [
 export function Legacy() {
   return (
     <section id="legacy" className="bg-canvas">
-      <div className="container-page flex flex-col items-center gap-14 py-20 lg:py-28">
+      <div className="container-page flex flex-col items-center gap-14 py-12 lg:py-28">
         <SectionHeading
           title="Backed by"
           accent="upGrad’s Learning Ecosystem"
@@ -33,23 +33,24 @@ export function Legacy() {
           <EcosystemCards />
         </Reveal>
 
-        {/* Wrapping grid below xl; at xl a single row of columns, each sized
+        {/* Wrapping grid below xl (two across on phones, the odd last one
+            centred on its own row); at xl a single row of columns, each sized
             to its own label. */}
         <Reveal
           as="dl"
           stagger={0.06}
-          className="grid w-full grid-cols-2 gap-y-10 pt-4 sm:grid-cols-3 md:grid-cols-4 xl:flex xl:items-start xl:justify-between xl:gap-y-0"
+          className="grid w-full grid-cols-2 gap-y-9 pt-2 sm:grid-cols-3 sm:gap-y-10 sm:pt-4 md:grid-cols-4 xl:flex xl:items-start xl:justify-between xl:gap-y-0"
         >
           {STATS.map((stat) => (
             <div
               key={stat.label}
               data-reveal-item
-              className="flex flex-col gap-2 px-4 text-center xl:flex-1 xl:px-3"
+              className="flex flex-col gap-2 px-3 text-center max-sm:last:odd:col-span-2 xl:flex-1 xl:px-3"
             >
-              <dd className="m-0 font-display text-[clamp(1.375rem,1.9vw,1.75rem)] font-bold leading-none tracking-[-0.02em] text-accent">
+              <dd className="m-0 font-display text-[30px] font-bold sm:text-[clamp(1.375rem,1.9vw,1.75rem)] leading-none tracking-[-0.02em] text-accent">
                 <CountUp value={stat.value} />
               </dd>
-              <dt className="text-[13px] leading-snug text-body">{stat.label}</dt>
+              <dt className="text-[14px] leading-snug text-body sm:text-[13px]">{stat.label}</dt>
             </div>
           ))}
         </Reveal>

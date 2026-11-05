@@ -165,7 +165,7 @@ export function Leaders() {
       ref={root}
       id="leaders"
       aria-labelledby="leaders-heading"
-      className="overflow-hidden bg-[var(--ld-bg)] py-20 text-[color:var(--ld-fg)] lg:py-28"
+      className="overflow-hidden bg-[var(--ld-bg)] py-12 text-[color:var(--ld-fg)] lg:py-28"
       style={LIGHT as React.CSSProperties}
     >
       {/* one enormous word, wider than the screen so it runs off both edges */}

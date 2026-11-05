@@ -274,7 +274,7 @@ const TINTS = ["#fce9eb", "#fff7ec", "#f1f6ff", "#eaf4ec"];
 /** one project: its picture, title and line */
 function ProjectTile({ p }: { p: Project }) {
   return (
-    <li className="group/tile w-[210px] shrink-0 snap-start sm:w-[230px]">
+    <li className="group/tile w-[168px] shrink-0 snap-start sm:w-[230px]">
       <div className="relative aspect-[3/2] overflow-hidden rounded-[6px] border border-ink/10 bg-white">
         <Image
           src={`/images/curriculum/v3/${p.img}`}
@@ -284,10 +284,10 @@ function ProjectTile({ p }: { p: Project }) {
           className="object-cover transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/tile:scale-[1.05]"
         />
       </div>
-      <h5 className="mt-3 line-clamp-2 text-[14px] font-semibold leading-snug text-ink">
+      <h5 className="mt-2 line-clamp-2 text-[13px] font-semibold leading-snug text-ink sm:mt-3 sm:text-[14px]">
         {p.title}
       </h5>
-      <p className="mt-1 line-clamp-2 text-[13px] leading-snug text-body">
+      <p className="mt-1 line-clamp-2 text-[13px] leading-snug text-body max-sm:hidden">
         {p.body}
       </p>
     </li>
@@ -313,7 +313,7 @@ function YearCard({ year, index }: { year: Year; index: number }) {
     <article
       data-card
       style={{ background: TINTS[index % TINTS.length] }}
-      className="relative grid origin-top gap-8 rounded-[6px] border border-ink/[0.06] p-6 shadow-[0_24px_48px_-32px_rgba(11,13,18,0.25)] sm:p-8 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.6fr)] lg:gap-12 lg:p-10"
+      className="relative grid origin-top gap-6 rounded-[6px] border border-ink/[0.06] p-5 sm:gap-8 sm:p-8 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.6fr)] lg:gap-12 lg:p-10"
     >
       {/* the veil that dims the card as the next one covers it */}
       <span
@@ -323,26 +323,31 @@ function YearCard({ year, index }: { year: Year; index: number }) {
       />
       {/* left: the year, its title and line, its skills */}
       <div className="flex flex-col">
-        <p className="font-[family-name:var(--font-bricolage)] text-[clamp(3rem,5vw,4.5rem)] font-semibold leading-none tracking-[-0.03em] text-accent">
-          {String(index + 1).padStart(2, "0")}
-        </p>
-        <p className="mt-3 text-[13px] font-semibold text-ink/60">
-          {year.label}
-        </p>
-        <h3 className="mt-1 font-display text-[clamp(1.375rem,2vw,1.75rem)] font-bold leading-tight tracking-[-0.02em] text-ink">
-          {year.title}
-        </h3>
-        <p className="mt-2.5 text-[14.5px] leading-relaxed text-body">
+        {/* phones: the number beside the year and title, to save height */}
+        <div className="flex items-center gap-4 sm:block">
+          <p className="font-[family-name:var(--font-bricolage)] text-[2.75rem] font-semibold leading-none tracking-[-0.03em] text-accent sm:text-[clamp(3rem,5vw,4.5rem)]">
+            {String(index + 1).padStart(2, "0")}
+          </p>
+          <div>
+            <p className="text-[13px] font-semibold text-ink/60 sm:mt-3">
+              {year.label}
+            </p>
+            <h3 className="mt-0.5 font-display text-[clamp(1.25rem,2vw,1.75rem)] font-bold leading-tight tracking-[-0.02em] text-ink sm:mt-1">
+              {year.title}
+            </h3>
+          </div>
+        </div>
+        <p className="mt-2.5 text-[14px] leading-relaxed text-body sm:text-[14.5px]">
           {year.body}
         </p>
 
-        <div className="mt-8 lg:mt-auto">
+        <div className="mt-5 sm:mt-8 lg:mt-auto">
           <Label>Skills you&apos;ll build</Label>
-          <ul className="mt-3 flex flex-wrap gap-2">
+          <ul className="mt-2.5 flex flex-wrap gap-1.5 sm:mt-3 sm:gap-2">
             {year.skills.map((sk) => (
               <li
                 key={sk}
-                className="rounded-[4px] bg-white px-2.5 py-1.5 text-[12.5px] font-medium text-ink"
+                className="rounded-[4px] bg-white px-2 py-1 text-[12px] font-medium text-ink sm:px-2.5 sm:py-1.5 sm:text-[12.5px]"
               >
                 {sk}
               </li>
@@ -354,13 +359,13 @@ function YearCard({ year, index }: { year: Year; index: number }) {
       {/* right: subjects, then projects */}
       <div className="min-w-0">
         <Label>Subjects</Label>
-        <ol className="mt-3 grid gap-x-8 gap-y-2.5 sm:grid-cols-2">
+        <ol className="mt-2.5 grid grid-cols-2 gap-x-4 gap-y-2 sm:mt-3 sm:gap-x-8 sm:gap-y-2.5">
           {year.subjects.map((sub, n) => (
             <li
               key={sub}
-              className="flex items-baseline gap-3 text-[14px] leading-snug text-ink"
+              className="flex items-baseline gap-2 text-[13px] leading-snug text-ink sm:gap-3 sm:text-[14px]"
             >
-              <span className="w-5 shrink-0 font-[family-name:var(--font-bricolage)] text-[12.5px] font-semibold text-accent">
+              <span className="w-4 shrink-0 font-[family-name:var(--font-bricolage)] text-[11.5px] font-semibold text-accent sm:w-5 sm:text-[12.5px]">
                 {String(n + 1).padStart(2, "0")}
               </span>
               {sub}
@@ -368,7 +373,7 @@ function YearCard({ year, index }: { year: Year; index: number }) {
           ))}
         </ol>
 
-        <div className="mt-8 flex items-center justify-between">
+        <div className="mt-6 flex items-center justify-between sm:mt-8">
           <Label>Projects you&apos;ll be working on</Label>
           <div className="hidden gap-1.5 sm:flex">
             {([-1, 1] as const).map((dir) => (
@@ -395,7 +400,7 @@ function YearCard({ year, index }: { year: Year; index: number }) {
         </div>
         <ul
           ref={row}
-          className="mt-4 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-1 [scrollbar-width:none]"
+          className="mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto sm:mt-4 sm:gap-4 pb-1 [scrollbar-width:none]"
         >
           {year.projects.map((p) => (
             <ProjectTile key={p.title} p={p} />
@@ -431,51 +436,83 @@ export function Curriculum() {
           },
         );
       });
-      // lg+: each card shrinks back and dims as the next slides over it
-      mm.add(
-        "(min-width: 1024px) and (prefers-reduced-motion: no-preference)",
-        () => {
-          const slots = q("[data-slot]");
+      // phones and tablets: a card is taller than the screen, so pinned under
+      // the nav it would be covered before it was read. Each one pins instead
+      // once its foot is in view (its sticky top is set from its height, a
+      // few px lower for each card so the edges of the deck show), and only
+      // then does the next slide over it.
+      mm.add("(max-width: 1023px)", () => {
+        const slots = q("[data-slot]") as HTMLElement[];
+        const place = () => {
+          const vh = window.innerHeight;
           slots.forEach((slot, i) => {
-            const next = slots[i + 1];
-            if (!next) return;
-            const st = {
-              trigger: next,
-              start: "top bottom",
-              end: "top 100px",
-              scrub: true,
-            };
-            gsap.to(slot.querySelector("[data-card]"), {
-              scale: 0.94,
-              ease: "none",
-              scrollTrigger: st,
-            });
-            // a veil rather than opacity, so the card stays solid and the one
-            // beneath never shows through
-            gsap.fromTo(
-              slot.querySelector("[data-veil]"),
-              { opacity: 0 },
-              { opacity: 1, ease: "none", scrollTrigger: { ...st } },
+            const h = slot.offsetHeight;
+            slot.style.setProperty(
+              "--stick",
+              `${Math.min(76 + i * 10, vh - h - 12 + i * 10)}px`,
             );
           });
-        },
-      );
+        };
+        place();
+        const ro = new ResizeObserver(place);
+        slots.forEach((s) => ro.observe(s));
+        window.addEventListener("resize", place);
+        return () => {
+          ro.disconnect();
+          window.removeEventListener("resize", place);
+          slots.forEach((s) => s.style.removeProperty("--stick"));
+        };
+      });
+
+      // each card shrinks back and dims as the next slides over it, until the
+      // next reaches its own pinned place
+      mm.add("(prefers-reduced-motion: no-preference)", () => {
+        const slots = q("[data-slot]");
+        slots.forEach((slot, i) => {
+          const next = slots[i + 1];
+          if (!next) return;
+          const st = {
+            trigger: next,
+            start: "top bottom",
+            end: () => `top ${parseFloat(getComputedStyle(next).top) || 100}px`,
+            scrub: true,
+            invalidateOnRefresh: true,
+          };
+          gsap.to(slot.querySelector("[data-card]"), {
+            scale: 0.94,
+            ease: "none",
+            scrollTrigger: st,
+          });
+          // a veil rather than opacity, so the card stays solid and the one
+          // beneath never shows through
+          gsap.fromTo(
+            slot.querySelector("[data-veil]"),
+            { opacity: 0 },
+            { opacity: 1, ease: "none", scrollTrigger: { ...st } },
+          );
+        });
+      });
       return () => mm.revert();
     },
     { scope: root },
   );
 
   return (
-    <section ref={root} id="curriculum" className="bg-canvas py-20 lg:py-28">
+    <section ref={root} id="curriculum" className="bg-canvas py-12 lg:py-28">
       <div className="container-page">
         <SectionHeading
           title="Build Industry Preferred Skills Through"
           accent="Practical Learning"
           breakBeforeAccent
+          // phones: two lines, "Build Industry Preferred Skills" / "Through
+          // Practical Learning", a size that fits the longer one
+          phoneBreakBefore="Through"
+          titleClassName="max-sm:text-[6.6vw]"
           intro="A structured learning journey designed with input from industry experts."
         />
 
-        {/* the deck: each year pins under the nav, the next stacking over it */}
+        {/* the deck: each year pins (under the nav on desktop; on phones once
+            its foot is in view), the next stacking over it */}
         <div
           data-deck
           className="mt-14 flex flex-col gap-6 lg:mt-16 lg:gap-[18vh]"
@@ -484,8 +521,8 @@ export function Curriculum() {
             <div
               key={year.key}
               data-slot
-              className="lg:sticky"
-              style={{ top: `calc(92px + ${i * 14}px)` }}
+              className="sticky top-[var(--stick,76px)] lg:top-[var(--lg-top)]"
+              style={{ ["--lg-top" as string]: `calc(92px + ${i * 14}px)` }}
             >
               <div className="origin-top">
                 <YearCard year={year} index={i} />

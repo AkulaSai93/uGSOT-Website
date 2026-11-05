@@ -31,8 +31,10 @@ const VIDEO_BASE =
  * site: specialisations, uGNET, facts, CTAs.
  *
  * Act 2 (scroll): the section is 200svh tall with a sticky stage. Scrolling
- * scrubs the pill open to a clean full-bleed film while the headline splits
- * apart. Reduced motion: one static screen, no scrub, everything visible.
+ * scrubs the pill open to a clean full-bleed film. On desktop the headline
+ * splits apart as it does; below lg it fades out where it is instead, so the
+ * small screen never clutters. Reduced motion: one static screen, no scrub,
+ * everything visible.
  *
  * Content-first: every fact, CTA and specialisation is in the first screen as
  * real text.
@@ -109,6 +111,59 @@ export function Hero() {
             0.55,
           );
 
+        // Headline metrics change once the display face swaps in.
+        document.fonts?.ready.then(() => ScrollTrigger.refresh());
+      });
+
+      // Phones and tablets: act 2 without the clutter. The film still opens
+      // from its pill to the full screen as you scroll, but the headline and
+      // the content under it fade out where they are instead of splitting
+      // sideways. The pill is measured afresh on every update (not once per
+      // refresh), so the film can't drift off it when the mobile address bar
+      // resizes the screen.
+      mm.add("(max-width: 1023px) and (prefers-reduced-motion: no-preference)", () => {
+        const text = q("h1, .hero-bottom, .hero-logos");
+        const fade = q(".hero-fade")[0];
+        const video = q<HTMLVideoElement>(".hero-video")[0];
+        const ease = gsap.parseEase("power2.inOut");
+        let progress = 0;
+        const render = () => {
+          const b = pillBox();
+          const w = stage.current!.clientWidth;
+          const h = stage.current!.clientHeight;
+          const t = ease(Math.min(progress / 0.7, 1));
+          gsap.set(media.current, {
+            left: b.left * (1 - t),
+            top: b.top * (1 - t),
+            width: b.width + (w - b.width) * t,
+            height: b.height + (h - b.height) * t,
+            borderRadius: (b.height / 2) * (1 - t),
+          });
+          gsap.set(video, { scale: 1.35 - 0.35 * Math.min(progress / 0.7, 1) });
+          gsap.set(text, { opacity: 1 - Math.min(progress / 0.3, 1) });
+          gsap.set(fade, { opacity: Math.min(Math.max((progress - 0.45) / 0.25, 0), 1) });
+        };
+        const st = ScrollTrigger.create({
+          trigger: root.current,
+          start: "top top",
+          end: "bottom bottom",
+          onUpdate: (self) => {
+            progress = self.progress;
+            render();
+            if (progress > 0 && video?.paused) video.play().catch(() => {});
+          },
+        });
+        render();
+        const ro = new ResizeObserver(render);
+        ro.observe(stage.current!);
+        document.fonts?.ready.then(render);
+        return () => {
+          ro.disconnect();
+          st.kill();
+        };
+      });
+
+      mm.add("(min-width: 1024px) and (prefers-reduced-motion: no-preference)", () => {
         /* ---------------------------------------------- act 2: scroll */
         const vw = () => window.innerWidth;
         const tl = gsap.timeline({
@@ -173,9 +228,6 @@ export function Hero() {
           )
           .to(q(".hero-fade"), { opacity: 1, duration: 0.25 }, 0.3)
           .to({}, { duration: 0.25 }); // hold the full-bleed film before the stage scrolls away
-
-        // Headline metrics change once the display face swaps in.
-        document.fonts?.ready.then(() => ScrollTrigger.refresh());
       });
 
       return () => mm.revert();
@@ -199,16 +251,35 @@ export function Hero() {
             on the left (and top-to-bottom on phones) keeps the ink type clean. */}
         <div aria-hidden className="hero-bg-wrap absolute inset-0 -z-10">
           <div className="hero-bg absolute inset-0">
+            {/* desktop: the wide scene, students on the right of the copy */}
             <Image
               src="/images/hero/hero-skyline.jpg"
               alt=""
               fill
               priority
               sizes="100vw"
-              className="object-cover object-[78%_100%] lg:object-[100%_100%]"
+              className="object-cover object-[100%_100%] max-lg:hidden"
+            />
+            {/* phones and tablets: the same scene drawn tall (Figma AI) —
+                open sky where the copy sits, the skyline and the students
+                small at the foot — so nothing busy sits behind the text */}
+            <Image
+              src="/images/hero/hero-skyline-mobile.jpg"
+              alt=""
+              fill
+              priority
+              sizes="100vw"
+              className="object-cover object-bottom lg:hidden"
             />
           </div>
-          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.75)_0%,rgba(255,255,255,0.4)_40%,rgba(255,255,255,0)_60%)] max-lg:bg-[linear-gradient(180deg,rgba(255,255,255,0.55)_0%,rgba(255,255,255,0.45)_35%,rgba(255,255,255,0.82)_55%,rgba(255,255,255,0.9)_100%)]" />
+          {/* a light wash so the copy reads: across from the left on
+              desktop; on phones, strongest through the middle where the copy
+              is, lighter at the top and the foot so the sky and the
+              students still show */}
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.75)_0%,rgba(255,255,255,0.4)_40%,rgba(255,255,255,0)_60%)] max-lg:bg-[linear-gradient(180deg,rgba(255,255,255,0.2)_0%,rgba(255,255,255,0.5)_22%,rgba(255,255,255,0.66)_50%,rgba(255,255,255,0.4)_70%,rgba(255,255,255,0)_82%)]" />
+          {/* phones: a black overlay rising from the foot, under the white
+              company logos */}
+          <div className="absolute inset-x-0 bottom-0 h-[34%] bg-[linear-gradient(0deg,rgba(0,0,0,0.82)_0%,rgba(0,0,0,0.55)_40%,rgba(0,0,0,0)_100%)] lg:hidden" />
         </div>
 
         {/* ------------------------------------------- the campus film (pill → full bleed) */}
@@ -231,19 +302,25 @@ export function Hero() {
           </video>
           {/* Bottom fade into the page canvas below, so the full-bleed film
               has no hard edge. Hidden while the film is still a pill. */}
-          <div className="hero-fade absolute inset-x-0 bottom-0 h-[38%] bg-[linear-gradient(180deg,rgba(255,255,255,0)_0%,rgba(255,255,255,0.55)_45%,#ffffff_100%)] opacity-0" />
+          {/* over the full-bleed film: a white fade into the page on
+              desktop; on phones a black overlay instead, matching the one
+              under the logos */}
+          <div className="hero-fade absolute inset-x-0 bottom-0 h-[38%] bg-[linear-gradient(180deg,rgba(255,255,255,0)_0%,rgba(255,255,255,0.55)_45%,#ffffff_100%)] opacity-0 max-lg:bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.45)_45%,rgba(0,0,0,0.8)_100%)]" />
         </div>
 
         {/* ------------------------------------------------------- act 1 */}
-        <div className="container-page relative z-10 flex h-full flex-col justify-center pb-8 pt-[80px] lg:pt-[88px]">
+        <div className="container-page relative z-10 flex h-full flex-col justify-center pb-[118px] pt-[72px] lg:pb-8 lg:pt-[88px]">
           {/* The words are the heading's real text (one mask each, real spaces
               between), so it reads, selects and copies as written. */}
-          <h1 className="font-display text-[min(11vw,9vh)] font-bold leading-[0.95] tracking-[-0.04em] sm:text-[min(6vw,9.5vh)]">
+          {/* Below lg (phones, mostly) the whole block is centred and a size
+              up: the headline (sized so "Computer Science" holds one line),
+              the lines under it, the facts and full-width buttons. */}
+          <h1 className="font-display text-[min(10.2vw,8.6vh)] font-bold leading-[0.95] tracking-[-0.04em] max-lg:text-center max-lg:leading-[1.08] sm:text-[min(9vw,8.6vh)] lg:text-[min(6vw,9.5vh)]">
             <span className="block">
               <span className="hero-line-1 block">
                 <MaskWord attr="hero">AI-First</MaskWord>
               </span>{" "}
-              <span className="hero-line-2 flex items-center gap-[0.18em]">
+              <span className="hero-line-2 flex items-center gap-[0.18em] max-lg:justify-center">
                 <span className="hero-line-2-text inline-block whitespace-nowrap">
                   <MaskWord attr="hero">B.Tech</MaskWord>{" "}
                   <MaskWord
@@ -260,7 +337,7 @@ export function Hero() {
                   className="inline-block h-[0.74em] w-[1.9em] shrink-0 translate-y-[0.04em] rounded-full"
                 />
               </span>{" "}
-              <span className="hero-line-3 block">
+              <span className="hero-line-3 block whitespace-nowrap">
                 <MaskWord attr="hero">Computer</MaskWord>{" "}
                 <MaskWord
                   attr="hero"
@@ -273,10 +350,10 @@ export function Hero() {
           </h1>
 
           {/* Content block, same order as the current site's hero. */}
-          <div className="hero-bottom mt-[clamp(1rem,2.6vh,1.75rem)] max-w-[640px]">
+          <div className="hero-bottom mt-[clamp(1.25rem,3vh,1.75rem)] w-full max-w-[640px] max-lg:mx-auto max-lg:text-center">
             <p
               data-reveal="fade"
-              className="text-[14px] leading-relaxed text-body sm:text-[15px]"
+              className="text-[16px] leading-relaxed text-body lg:text-[15px]"
             >
               Quantum Computing <span className="text-ink/30">|</span> GenAI
               &amp; ML <span className="text-ink/30">|</span> Full Stack
@@ -285,21 +362,25 @@ export function Hero() {
 
             <p
               data-reveal="fade"
-              className="mt-[clamp(0.625rem,1.8vh,1rem)] text-[14.5px] font-bold text-ink"
+              className="mt-[clamp(0.75rem,1.8vh,1rem)] text-[17px] font-bold text-ink lg:text-[14.5px]"
             >
               Admission starts with uGNET
             </p>
 
             <div data-reveal="fade">
-              <HeroFacts className="mt-[clamp(0.625rem,1.6vh,1rem)]" />
+              <HeroFacts className="mt-[clamp(0.75rem,1.8vh,1rem)] max-lg:justify-center" />
             </div>
 
             <div
               data-reveal="fade"
-              className="mt-[clamp(1rem,2.4vh,1.5rem)] flex flex-wrap items-center gap-3"
+              className="mt-[clamp(1.25rem,2.8vh,1.5rem)] flex flex-col items-stretch gap-3 sm:max-w-none sm:flex-row sm:flex-wrap sm:items-center sm:justify-center lg:justify-start"
             >
               <Magnetic>
-                <GlowButton href="#apply" streak="#0b0d12">
+                <GlowButton
+                  href="#apply"
+                  streak="#0b0d12"
+                  className="max-sm:w-full max-sm:[&>span:last-child]:w-full max-sm:[&>span:last-child]:justify-center max-sm:[&>span:last-child]:py-4 max-sm:[&>span:last-child]:text-[16px]"
+                >
                   Apply Now
                   <ArrowRight
                     size={16}
@@ -312,7 +393,7 @@ export function Hero() {
               <Magnetic strength={0.25}>
                 <Link
                   href="#brochure"
-                  className="inline-flex items-center gap-2.5 rounded-[6px] border border-ink/25 px-6 py-[14.5px] text-[15px] font-semibold text-ink transition-colors hover:border-ink hover:bg-ink hover:text-white"
+                  className="inline-flex items-center justify-center gap-2.5 rounded-[6px] border border-ink/25 bg-white/60 px-6 py-[14.5px] backdrop-blur-md text-[15px] font-semibold text-ink transition-colors hover:border-ink hover:bg-ink hover:text-white max-sm:w-full max-sm:py-[17.5px] max-sm:text-[16px]"
                 >
                   <Download size={16} strokeWidth={2} aria-hidden />
                   Download Brochure
@@ -320,12 +401,21 @@ export function Hero() {
               </Magnetic>
             </div>
 
+            {/* desktop: the strip under the buttons */}
             <div
               data-reveal="fade"
               className="mt-[clamp(1.25rem,3vh,2rem)] hidden lg:block"
             >
               <CompanyLogos tone="light" compact />
             </div>
+          </div>
+        </div>
+
+        {/* phones and tablets: the strip at the hero's foot, in white over
+            the black overlay */}
+        <div className="hero-logos container-page absolute inset-x-0 bottom-0 z-10 pb-[max(20px,env(safe-area-inset-bottom))] text-center lg:hidden">
+          <div data-reveal="fade">
+            <CompanyLogos tone="dark" compact className="[&>p]:text-[14px]" />
           </div>
         </div>
       </div>

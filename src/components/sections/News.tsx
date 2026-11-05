@@ -162,7 +162,9 @@ function StoryCard({ s, copy }: { s: Story; copy: boolean }) {
     <li aria-hidden={copy || undefined} className="pr-5">
       <article
         data-story
-        className="group flex h-full w-[min(86vw,540px)] items-center gap-6 rounded-[4px] border border-ink/10 bg-white p-5 sm:gap-7"
+        // phones: the book above the words, in a card narrow enough to be
+        // seen whole in the strip; from sm the two sit side by side
+        className="group flex h-full w-[min(72vw,300px)] flex-col items-start gap-5 rounded-[4px] border border-ink/10 bg-white p-5 sm:w-[min(86vw,540px)] sm:flex-row sm:items-center sm:gap-7"
       >
         <Book s={s} />
         <div className="min-w-0">
@@ -303,7 +305,7 @@ export function News() {
     <section
       ref={root}
       id="news"
-      className="bg-canvas pb-12 pt-20 lg:pb-14 lg:pt-28"
+      className="bg-canvas pb-12 pt-12 lg:pb-14 lg:pt-28"
     >
       <div className="container-page">
         <SectionHeading

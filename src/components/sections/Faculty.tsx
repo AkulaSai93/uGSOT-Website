@@ -407,7 +407,7 @@ export function Faculty() {
     <section
       ref={root}
       id="faculty"
-      className="bg-canvas pb-12 pt-20 lg:pb-16 lg:pt-28"
+      className="bg-canvas pb-12 pt-12 lg:pb-16 lg:pt-28"
     >
       <div className="container-page">
         <SectionHeading

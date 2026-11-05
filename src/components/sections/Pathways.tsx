@@ -406,7 +406,7 @@ export function Pathways() {
           </div>
         </div>
       ) : (
-        <div className="container-page py-20">
+        <div className="container-page py-12">
           {heading}
           {row}
           <div className="mt-16">

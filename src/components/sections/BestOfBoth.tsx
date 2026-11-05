@@ -490,7 +490,7 @@ export function BestOfBoth() {
           </div>
         </div>
       ) : (
-        <div className="container-page py-20">
+        <div className="container-page py-12">
           <SectionHeading
             title="Where World-Class University Meets"
             accent="Silicon Valley Learning"

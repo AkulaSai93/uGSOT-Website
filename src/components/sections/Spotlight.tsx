@@ -198,7 +198,7 @@ export function Spotlight() {
   );
 
   return (
-    <section ref={root} id="spotlight" className="bg-canvas max-lg:py-20">
+    <section ref={root} id="spotlight" className="bg-canvas max-lg:py-12">
       {/* lg+: a tall track; the screen inside holds while the cards fly out */}
       <div data-track className="relative lg:h-[280vh]">
         <div

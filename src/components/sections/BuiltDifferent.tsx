@@ -77,7 +77,7 @@ export function BuiltDifferent() {
     <section
       id="built-different"
       aria-labelledby="built-different-heading"
-      className="w-full bg-canvas py-20 lg:py-28"
+      className="w-full bg-canvas py-12 lg:py-28"
     >
       <div className="container-page flex flex-col gap-10 lg:gap-[60px]">
         <SectionHeading
