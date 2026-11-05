@@ -17,10 +17,11 @@ gsap.registerPlugin(ScrollTrigger, useGSAP);
  * Laptop after the MacBook Pro hero on apple.com (the client's reference),
  * made from our own pieces: a Figma AI render of a midnight MacBook Air — the
  * model students are given — seen from above the keyboard (camera notch,
- * Touch ID, no speaker grilles beside the keys), lid tilted back, on black
- * (macbook-air-open-hd.webp, AI-upscaled to 3072px; no logo). It
- * was rendered with a chroma-green display, which is cut out, so the screen is
- * a hole; behind it sits the wallpaper (wallpaper-supplied-hd.jpg), warped onto
+ * Touch ID, no speaker grilles beside the keys), lid tilted back (AI-upscaled
+ * to 3072px; no logo). Its black surround is cut away, so it sits on the
+ * section's white or black alike (macbook-air-cut.webp, made from
+ * macbook-air-open-hd.webp); the screen is a hole too, and behind it sits
+ * the wallpaper (wallpaper-supplied-hd.jpg), warped onto
  * the display's exact four corners with a CSS matrix3d, so it reads as the
  * laptop's screen.
  *
@@ -106,18 +107,7 @@ function Laptop() {
   }, []);
 
   return (
-    <div
-      ref={box}
-      className="relative aspect-[1536/864] w-full"
-      style={{
-        // the render's black surround melts into the section's black at the
-        // top and sides; the foot is cut by the section's edge
-        maskImage:
-          "linear-gradient(180deg, transparent 0%, #000 6%), linear-gradient(90deg, transparent 0%, #000 4%, #000 96%, transparent 100%)",
-        maskComposite: "intersect",
-        WebkitMaskComposite: "source-in",
-      }}
-    >
+    <div ref={box} className="relative aspect-[1536/864] w-full">
       {/* the display: the wallpaper, warped onto the screen's corners,
           behind the laptop with its screen cut out */}
       <div
@@ -145,7 +135,7 @@ function Laptop() {
         <span className="pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,rgba(255,255,255,0.07)_0%,rgba(255,255,255,0)_40%)]" />
       </div>
       <Image
-        src="/images/toolkit/macbook-air-open-hd.webp"
+        src="/images/toolkit/macbook-air-cut.webp"
         quality={90}
         alt="Student MacBook Air, open"
         fill

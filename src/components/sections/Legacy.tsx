@@ -46,7 +46,7 @@ export function Legacy() {
               data-reveal-item
               className="flex flex-col gap-2 px-4 text-center xl:flex-1 xl:px-3"
             >
-              <dd className="m-0 font-display text-[clamp(1.375rem,1.9vw,1.75rem)] font-bold leading-none tracking-[-0.02em] text-ink">
+              <dd className="m-0 font-display text-[clamp(1.375rem,1.9vw,1.75rem)] font-bold leading-none tracking-[-0.02em] text-accent">
                 <CountUp value={stat.value} />
               </dd>
               <dt className="text-[13px] leading-snug text-body">{stat.label}</dt>

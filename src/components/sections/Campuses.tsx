@@ -116,6 +116,8 @@ export function Campuses() {
   const [tab, setTab] = useState({ left: 0, width: 0 });
   const first = useRef(true);
   const switchTl = useRef<gsap.core.Timeline | null>(null);
+  /** the campus shown before this switch, to tell which way to wipe */
+  const prev = useRef(0);
 
   // sliding tab highlight
   useEffect(() => {
@@ -142,6 +144,11 @@ export function Campuses() {
       // leave the stage empty.
       switchTl.current?.kill();
 
+      // a campus to the right of the last one (Pune) wipes in from the right,
+      // one to its left (Tumkuru) from the left — the way the tabs are laid out
+      const fromRight = active > prev.current;
+      prev.current = active;
+
       if (first.current || reduced) {
         first.current = false;
         slides.forEach((s, i) => gsap.set(s, { autoAlpha: i === active ? 1 : 0, clipPath: "inset(0% 0% 0% 0%)" }));
@@ -156,7 +163,11 @@ export function Campuses() {
           onComplete: () => slides.forEach((s, i) => i !== active && gsap.set(s, { autoAlpha: 0 })),
         })
         .set(incoming, { autoAlpha: 1 })
-        .fromTo(incoming, { clipPath: "inset(0% 0% 0% 100%)" }, { clipPath: "inset(0% 0% 0% 0%)", duration: 1.1 })
+        .fromTo(
+          incoming,
+          { clipPath: fromRight ? "inset(0% 0% 0% 100%)" : "inset(0% 100% 0% 0%)" },
+          { clipPath: "inset(0% 0% 0% 0%)", duration: 1.1 },
+        )
         .fromTo(incoming.querySelector("[data-photo]"), { scale: 1.15 }, { scale: 1, duration: 1.5, ease: "expo.out" }, 0)
         .fromTo(
           gsap.utils.toArray("[data-line]", wrap.current),

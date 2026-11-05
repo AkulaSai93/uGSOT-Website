@@ -16,8 +16,12 @@ gsap.registerPlugin(ScrollTrigger, useGSAP);
  * Portraits are the site's cut-outs with its baked-in red block and swoosh
  * removed (public/images/faculty/*.png).
  *
- * Cards after a "speaker lineup" reference the client supplied: a colour
- * frame with "selection" corner handles, the portrait outlined like a sticker,
+ * Cards after a "speaker lineup" reference the client supplied: a frame with
+ * "selection" corner handles, after the client's "PLACED" poster in black and
+ * white: near-black throughout, the faintest lift at the foot,
+ * frosted vertical glass bands, a glossy sheen and a fine bright inner edge,
+ * the portrait outlined like a sticker with a white band (sticker-v2: the
+ * band recoloured from the old yellow, orange and pink),
  * a name pill with a cursor, and the role in a white box beneath. Every
  * faculty member gets one, and they run past in a single moving strip under a
  * centred heading, alternate cards set lower for the staggered lineup look.
@@ -149,9 +153,29 @@ const COMPANIES: Record<string, LogoKey[]> = {
 };
 /** logo height by how many a card carries: one logo can be big, a full row
  *  of six has to share two lines of the box */
-const logoHeightFor = (n: number) => (n === 1 ? 30 : n === 2 ? 22 : n === 3 ? 20 : 18);
+const logoHeightFor = (n: number) =>
+  n === 1 ? 30 : n === 2 ? 22 : n === 3 ? 20 : 18;
 
-const COLORS = ["#FFC83D", "#FF8A4C", "#F6A5BE"];
+/** every card's backdrop, after the client's "PLACED" poster reference, in
+ *  black: near-black throughout, the faintest lift at the foot, with a soft
+ *  glossy sheen */
+const BACKDROP = [
+  // a glossy sheen across the glass
+  "linear-gradient(125deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.03) 32%, rgba(255,255,255,0) 50%)",
+  // near-black throughout, the faintest lift and see-through at the foot
+  "linear-gradient(180deg, #040405 0%, #08080a 70%, rgba(20,21,24,0.96) 100%)",
+].join(", ");
+
+/** the PLACED poster's frosted glass: wide, soft vertical bands of light and
+ *  shade, blurred */
+function Glass() {
+  return (
+    <span aria-hidden className="absolute inset-0">
+      {/* frosted vertical bands */}
+      <span className="absolute inset-0 bg-[repeating-linear-gradient(90deg,rgba(255,255,255,0)_0px,rgba(255,255,255,0.06)_10px,rgba(255,255,255,0.015)_22px,rgba(0,0,0,0.3)_34px,rgba(255,255,255,0)_44px)] blur-[3px]" />
+    </span>
+  );
+}
 const INK = "#0b0d12";
 /** seconds for the strip to travel one full copy of the list */
 const LOOP_SECONDS = 55;
@@ -175,7 +199,6 @@ function StickerCard({
   index: number;
   copy: boolean;
 }) {
-  const color = COLORS[index % COLORS.length];
   const logos = COMPANIES[p.img] ?? ["upgradsot"];
   const logoHeight = logoHeightFor(logos.length);
   return (
@@ -187,8 +210,8 @@ function StickerCard({
       <div className="transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-rotate-2">
         {/* the photo frame, outlined like a selected design layer */}
         <div
-          className="relative border border-ink"
-          style={{ background: color }}
+          className="relative border border-ink shadow-[inset_0_1px_0_rgba(255,255,255,0.35),inset_0_0_0_1px_rgba(255,255,255,0.14)]"
+          style={{ background: BACKDROP }}
         >
           <Handle className="-left-[5px] -top-[5px]" />
           <Handle className="-right-[5px] -top-[5px]" />
@@ -196,18 +219,19 @@ function StickerCard({
           <Handle className="-bottom-[5px] -right-[5px]" />
 
           {/* designation, in the open space above the portrait */}
-          <p className="absolute inset-x-0 top-0 z-[2] px-5 pt-4 text-center text-[13px] font-semibold leading-snug text-ink">
+          <p className="absolute inset-x-0 top-0 z-[2] px-5 pt-4 text-center text-[13px] font-semibold leading-snug text-white/90">
             {p.role}
           </p>
 
           <div className="relative aspect-[1/1.12] overflow-hidden">
+            <Glass />
             <div className="absolute inset-x-[6%] bottom-0 top-[22%] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04]">
-              {/* the sticker look (a band of the frame colour, an ink outline
+              {/* the sticker look (a white band, an ink outline
                   and a soft offset shadow) is baked into these PNGs: as CSS
                   drop-shadow filters it had to be repainted on all 42 cards
                   every frame and made the strip stutter */}
               <Image
-                src={`/images/faculty/sticker/${p.img}.png`}
+                src={`/images/faculty/sticker-v2/${p.img}.png`}
                 alt={copy ? "" : p.name}
                 fill
                 sizes="280px"
@@ -278,7 +302,13 @@ export function Faculty() {
         const loop = gsap.fromTo(
           track,
           { xPercent: 0 },
-          { xPercent: -50, duration: LOOP_SECONDS, ease: "none", repeat: -1, force3D: true },
+          {
+            xPercent: -50,
+            duration: LOOP_SECONDS,
+            ease: "none",
+            repeat: -1,
+            force3D: true,
+          },
         );
 
         // ease to a stop under the pointer, back up to speed on leave
@@ -334,7 +364,11 @@ export function Faculty() {
   );
 
   return (
-    <section ref={root} id="faculty" className="bg-canvas pb-12 pt-20 lg:pb-16 lg:pt-28">
+    <section
+      ref={root}
+      id="faculty"
+      className="bg-canvas pb-12 pt-20 lg:pb-16 lg:pt-28"
+    >
       <div className="container-page">
         <SectionHeading
           title="Taught by World's Top Tech and"

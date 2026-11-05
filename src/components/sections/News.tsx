@@ -21,7 +21,8 @@ gsap.registerPlugin(ScrollTrigger, useGSAP);
  * left (the story's picture as its cover) and, on the right, the outlet and
  * date, the headline cut to two lines, and a "Read more" button. Hovering a
  * card opens the book: the cover swings back on its spine to show the pages
- * underneath. The cards run past in one strip that keeps moving.
+ * underneath — and the book of whichever card is passing the middle of the
+ * strip opens by itself. The cards run past in one strip that keeps moving.
  *
  * LINKS TO ADD: each story's `href` below is a placeholder ("#"). Paste the
  * article URL in when you have it; "Read more" (and the book) then open it in
@@ -104,7 +105,8 @@ const linkProps = (href: string) =>
 
 /**
  * The book: a stack of pages with the cover on top, hinged on its left edge.
- * On the card's hover the cover swings back (rotateY about the spine) and the
+ * On the card's hover — or while the card passes the middle of the strip
+ * (its data-open) — the cover swings back (rotateY about the spine) and the
  * pages show; the page edges peek out to the right like a closed book's.
  */
 function Book({ s }: { s: Story }) {
@@ -137,7 +139,7 @@ function Book({ s }: { s: Story }) {
       </span>
       {/* the cover */}
       <span
-        className={`absolute inset-0 origin-left overflow-hidden rounded-r-[4px] shadow-[6px_10px_24px_-10px_rgba(11,13,18,0.5)] transition-transform duration-700 [backface-visibility:hidden] [transform-style:preserve-3d] ${EASE} group-hover:[transform:rotateY(-58deg)]`}
+        className={`absolute inset-0 origin-left overflow-hidden rounded-r-[4px] shadow-[6px_10px_24px_-10px_rgba(11,13,18,0.5)] transition-transform duration-700 [backface-visibility:hidden] [transform-style:preserve-3d] ${EASE} group-hover:[transform:rotateY(-58deg)] group-data-[open]:[transform:rotateY(-58deg)]`}
       >
         <Image
           src={`/images/news/${s.img}.jpg`}
@@ -158,7 +160,10 @@ function Book({ s }: { s: Story }) {
 function StoryCard({ s, copy }: { s: Story; copy: boolean }) {
   return (
     <li aria-hidden={copy || undefined} className="pr-5">
-      <article className="group flex h-full w-[min(86vw,540px)] items-center gap-6 rounded-[4px] border border-ink/10 bg-white p-5 sm:gap-7">
+      <article
+        data-story
+        className="group flex h-full w-[min(86vw,540px)] items-center gap-6 rounded-[4px] border border-ink/10 bg-white p-5 sm:gap-7"
+      >
         <Book s={s} />
         <div className="min-w-0">
           <p className="whitespace-nowrap text-[12.5px] font-semibold text-accent">
@@ -232,6 +237,40 @@ export function News() {
         strip.addEventListener("mouseenter", slow);
         strip.addEventListener("mouseleave", go);
 
+        // the card passing the middle of the strip opens its book, and
+        // closes it again once it has moved past
+        const stories = q("[data-story]");
+        let onScreen = false;
+        const watch = ScrollTrigger.create({
+          trigger: strip,
+          start: "top bottom",
+          end: "bottom top",
+          onToggle: (self) => (onScreen = self.isActive),
+        });
+        let current: Element | null = null;
+        const openMiddle = () => {
+          if (!onScreen) return;
+          const r = strip.getBoundingClientRect();
+          const mid = r.left + r.width / 2;
+          let best: Element | null = null;
+          let gap = Infinity;
+          for (const el of stories) {
+            const b = el.getBoundingClientRect();
+            const d = Math.abs(b.left + b.width / 2 - mid);
+            // open only while the card is near dead centre, so each book
+            // visibly opens as it arrives and closes as it moves on
+            if (d < gap && d < b.width * 0.2) {
+              gap = d;
+              best = el;
+            }
+          }
+          if (best === current) return;
+          current?.removeAttribute("data-open");
+          best?.setAttribute("data-open", "");
+          current = best;
+        };
+        gsap.ticker.add(openMiddle);
+
         gsap.fromTo(
           strip,
           { y: 40, autoAlpha: 0 },
@@ -248,6 +287,9 @@ export function News() {
           },
         );
         return () => {
+          gsap.ticker.remove(openMiddle);
+          watch.kill();
+          current?.removeAttribute("data-open");
           strip.removeEventListener("mouseenter", slow);
           strip.removeEventListener("mouseleave", go);
         };
@@ -258,7 +300,11 @@ export function News() {
   );
 
   return (
-    <section ref={root} id="news" className="bg-canvas pb-12 pt-20 lg:pb-14 lg:pt-28">
+    <section
+      ref={root}
+      id="news"
+      className="bg-canvas pb-12 pt-20 lg:pb-14 lg:pt-28"
+    >
       <div className="container-page">
         <SectionHeading
           title="Latest"
