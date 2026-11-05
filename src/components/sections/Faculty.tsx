@@ -5,6 +5,7 @@ import { useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { SectionHeading } from "@/components/site/SectionHeading";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
@@ -287,6 +288,8 @@ function StickerCard({
 
 export function Faculty() {
   const root = useRef<HTMLElement>(null);
+  /** slides the strip one card back (-1) or on (1); set up with the loop */
+  const step = useRef<(dir: 1 | -1) => void>(() => {});
 
   useGSAP(
     () => {
@@ -295,10 +298,12 @@ export function Faculty() {
       const strip = q("[data-strip]")[0];
       const mm = gsap.matchMedia();
 
-      mm.add("(prefers-reduced-motion: no-preference)", () => {
-        // travels right to left: slides back by one copy of the list, then
-        // repeats. On its own GPU layer (force3D) so
-        // each frame is just a move, never a repaint of the cards
+      // travels right to left: slides back by one copy of the list, then
+      // repeats. On its own GPU layer (force3D) so each frame is just a move,
+      // never a repaint of the cards. Started many loops in, so the arrows can
+      // step it backwards past the start; with reduced motion it stands still
+      // and only the arrows move it.
+      const makeLoop = (auto: boolean) => {
         const loop = gsap.fromTo(
           track,
           { xPercent: 0 },
@@ -308,8 +313,43 @@ export function Faculty() {
             ease: "none",
             repeat: -1,
             force3D: true,
+            paused: !auto,
           },
         );
+        loop.totalTime(LOOP_SECONDS * 100);
+
+        // the arrows: glide the loop one card's worth of its time either way
+        // (the repeat wraps it), the auto-scroll held while it does. However
+        // many clicks come in a row, it picks up again shortly after the last
+        // one — a beat's pause, then easing back up to speed (~1.5s in all)
+        let resume: gsap.core.Tween | null = null;
+        step.current = (dir) => {
+          resume?.kill();
+          loop.pause();
+          gsap.to(loop, {
+            totalTime: loop.totalTime() + (dir * LOOP_SECONDS) / FACULTY.length,
+            duration: 0.7,
+            ease: "power3.inOut",
+            // only an earlier step's glide, not the hover slow-down
+            overwrite: "auto",
+            onComplete: () => {
+              if (!auto) return;
+              resume = gsap.delayedCall(0.3, () => {
+                loop.timeScale(0).play();
+                gsap.to(loop, { timeScale: 1, duration: 0.5, ease: "power1.in", overwrite: "auto" });
+              });
+            },
+          });
+        };
+        return loop;
+      };
+
+      mm.add("(prefers-reduced-motion: reduce)", () => {
+        makeLoop(false);
+      });
+
+      mm.add("(prefers-reduced-motion: no-preference)", () => {
+        const loop = makeLoop(true);
 
         // ease to a stop under the pointer, back up to speed on leave
         const slow = () =>
@@ -317,14 +357,14 @@ export function Faculty() {
             timeScale: 0,
             duration: 0.6,
             ease: "power2.out",
-            overwrite: true,
+            overwrite: "auto",
           });
         const go = () =>
           gsap.to(loop, {
             timeScale: 1,
             duration: 0.8,
             ease: "power2.in",
-            overwrite: true,
+            overwrite: "auto",
           });
         strip.addEventListener("mouseenter", slow);
         strip.addEventListener("mouseleave", go);
@@ -412,6 +452,25 @@ export function Faculty() {
               />
             ))}
           </ul>
+        </div>
+
+        {/* move the strip by hand, one card at a time */}
+        <div className="mt-6 flex justify-center gap-2">
+          {([-1, 1] as const).map((dir) => (
+            <button
+              key={dir}
+              type="button"
+              onClick={() => step.current(dir)}
+              aria-label={dir < 0 ? "Previous faculty member" : "Next faculty member"}
+              className="grid size-11 place-items-center rounded-[6px] border border-ink/15 bg-white text-ink transition-colors duration-300 hover:border-ink hover:bg-ink hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            >
+              {dir < 0 ? (
+                <ArrowLeft size={18} strokeWidth={2} aria-hidden />
+              ) : (
+                <ArrowRight size={18} strokeWidth={2} aria-hidden />
+              )}
+            </button>
+          ))}
         </div>
       </div>
     </section>

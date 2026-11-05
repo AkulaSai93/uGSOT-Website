@@ -41,8 +41,10 @@ gsap.registerPlugin(ScrollTrigger, useGSAP);
  * foot just below the function row. (The frame carries Apple's own photograph;
  * our MacBook Air render stands in for it.)
  *
- * Motion (GSAP, scrubbed by the scroll): the MacBook rises into place as it
- * comes up the screen and its display wakes.
+ * Motion (GSAP, scrubbed by the scroll): on desktop the section holds the
+ * screen (a 200vh track) while the MacBook — in full view throughout, never
+ * faded — rises and grows into place and its display wakes; on smaller
+ * screens the same plays as it comes up the screen, without the hold.
  */
 
 /** corners measured on the 1536x864 render (the file is the same picture at
@@ -129,7 +131,7 @@ function Laptop() {
           sizes="1600px"
           className="object-cover"
         />
-        {/* asleep until the laptop has risen into place */}
+        {/* dims the wallpaper until the laptop has risen into place */}
         <span data-screen-off className="absolute inset-0 bg-black" />
         {/* a faint sheen across the glass */}
         <span className="pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,rgba(255,255,255,0.07)_0%,rgba(255,255,255,0)_40%)]" />
@@ -195,41 +197,55 @@ export function Toolkit() {
     () => {
       const q = gsap.utils.selector(root);
       const mm = gsap.matchMedia();
+      // the laptop is in full view from the start (never faded out against
+      // the black), its wallpaper already showing, dimmed, so it reads on the
+      // black; it rises and grows into place as the display brightens
       const build = (scrollTrigger: ScrollTrigger.Vars) =>
         gsap
           .timeline({ scrollTrigger })
           .fromTo(
             q("[data-laptop]"),
-            { yPercent: 14, scale: 0.92, autoAlpha: 0.2 },
-            {
-              yPercent: 0,
-              scale: 1,
-              autoAlpha: 1,
-              duration: 0.6,
-              ease: "power2.out",
-            },
+            { yPercent: 22, scale: 0.84 },
+            { yPercent: 0, scale: 1, duration: 0.6, ease: "power2.out" },
             0,
           )
           .fromTo(
             q("[data-glow]"),
-            { opacity: 0 },
-            { opacity: 1, duration: 0.4 },
-            0.3,
+            { opacity: 0.35 },
+            { opacity: 1, duration: 0.5 },
+            0,
           )
           .fromTo(
             q("[data-screen-off]"),
-            { opacity: 1 },
-            { opacity: 0, duration: 0.2, ease: "power1.in" },
-            0.3,
+            { opacity: 0.55 },
+            { opacity: 0, duration: 0.5, ease: "power1.inOut" },
+            0,
           );
-      mm.add("(prefers-reduced-motion: no-preference)", () => {
-        build({
-          trigger: q("[data-laptop]")[0],
-          start: "top 95%",
-          end: "top 35%",
-          scrub: 0.8,
-        });
-      });
+      // desktop: the section holds the screen while the scroll plays it
+      // through, as on apple.com
+      mm.add(
+        "(min-width: 1024px) and (prefers-reduced-motion: no-preference)",
+        () => {
+          build({
+            trigger: q("[data-track]")[0],
+            start: "top top",
+            end: "bottom bottom",
+            scrub: 0.8,
+          });
+        },
+      );
+      // smaller screens: no hold, it plays as the laptop comes up the screen
+      mm.add(
+        "(max-width: 1023px) and (prefers-reduced-motion: no-preference)",
+        () => {
+          build({
+            trigger: q("[data-laptop]")[0],
+            start: "top 95%",
+            end: "top 40%",
+            scrub: 0.8,
+          });
+        },
+      );
       // reduced motion: shown awake
       mm.add("(prefers-reduced-motion: reduce)", () => {
         gsap.set(q("[data-screen-off]"), { opacity: 0 });
@@ -243,31 +259,37 @@ export function Toolkit() {
     <section
       ref={root}
       id="toolkit"
-      className="relative overflow-hidden bg-[var(--tk-bg)]"
+      className="relative overflow-x-clip bg-[var(--tk-bg)]"
       style={LIGHT as React.CSSProperties}
     >
-      <div className="container-page relative pt-14">
-        <SectionHeading
-          title="Your Innovation"
-          accent="Toolkit, Included"
-          intro="High-performance Apple MacBook provided to every student for academic use for coding, creating, collaborating, and bringing ideas to life anytime, anywhere."
-        />
-      </div>
+      {/* lg+: a tall track; the screen inside holds while the laptop rises */}
+      <div data-track className="relative lg:h-[200vh]">
+        <div className="lg:sticky lg:top-0 lg:flex lg:h-[100svh] lg:flex-col lg:overflow-hidden">
+          <div className="container-page relative pt-14 lg:pt-[max(88px,10svh)]">
+            <SectionHeading
+              title="Your Innovation"
+              accent="Toolkit, Included"
+              intro="High-performance Apple MacBook provided to every student for academic use for coding, creating, collaborating, and bringing ideas to life anytime, anywhere."
+            />
+          </div>
 
-      {/* the MacBook, centred under the heading and cut by the section's foot
-          just below the function row (the render's lower part is clipped) */}
-      <div className="relative mt-[clamp(24px,3.6vw,54px)] overflow-hidden">
-        {/* a soft light pooling under the laptop once it is awake */}
-        <span
-          data-glow
-          aria-hidden
-          className="pointer-events-none absolute bottom-0 left-1/2 h-[45%] w-[60%] -translate-x-1/2 rounded-full bg-[#5b6b8a]/25 blur-[90px]"
-        />
-        <div
-          data-laptop
-          className="relative -ml-[2vw] aspect-[1536/770] w-[104vw] overflow-hidden md:mx-auto md:w-[min(1096px,84vw)] lg:w-[min(1096px,72vw)]"
-        >
-          <Laptop />
+          {/* the MacBook, centred under the heading and cut by the screen's
+              foot just below the function row (the render's lower part is
+              clipped); on desktop sized to the room left under the heading */}
+          <div className="relative mt-[clamp(24px,3.6vw,54px)] overflow-hidden lg:mt-auto">
+            {/* a soft light pooling under the laptop once it is awake */}
+            <span
+              data-glow
+              aria-hidden
+              className="pointer-events-none absolute bottom-0 left-1/2 h-[45%] w-[60%] -translate-x-1/2 rounded-full bg-[#5b6b8a]/25 blur-[90px]"
+            />
+            <div
+              data-laptop
+              className="relative -ml-[2vw] aspect-[1536/770] w-[104vw] origin-bottom overflow-hidden md:mx-auto md:w-[min(1096px,84vw)] lg:w-[min(1096px,72vw,calc((100svh-300px)*1.99))]"
+            >
+              <Laptop />
+            </div>
+          </div>
         </div>
       </div>
     </section>

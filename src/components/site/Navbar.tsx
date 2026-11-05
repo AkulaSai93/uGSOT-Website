@@ -24,6 +24,59 @@ const NAV_LINKS = [
   { label: "Admission", href: "#admission" },
 ];
 
+const SOT = "https://sot.upgrad.com";
+
+type MenuLink = { label: string; href: string; note?: string; tag?: string };
+/** a row of the menu: a page of its own, or a group that opens to its links */
+type MenuRow = { label: string; href?: string; links?: MenuLink[] };
+
+/**
+ * Everything the Menu lists, as on sot.upgrad.com's menu: its two campuses,
+ * the Resources and Help and Support lists under More, and the top-level
+ * links. The menu is drawn from this alone. Each row is either a link
+ * (`href`) or a group (`links`) that opens under its name to show them —
+ * add a link to a group, or a new row, and it takes its place.
+ */
+const MENU: MenuRow[] = [
+  { label: "Home", href: "/" },
+  {
+    label: "Campuses",
+    links: [
+      {
+        label: "Sri Siddhartha Academy of Higher Education",
+        href: `${SOT}/university/ssahe`,
+        note: "Tumkuru (Outer Bangalore), Karnataka",
+        tag: "NAAC A+",
+      },
+      {
+        label: "Ajeenkya DY Patil University",
+        href: `${SOT}/university/adypu`,
+        note: "Pune, Maharashtra",
+        tag: "NAAC A",
+      },
+    ],
+  },
+  {
+    label: "Resources",
+    links: [
+      { label: "AI Playground", href: `${SOT}/Playground` },
+      { label: "Ignite AI Buildathon", href: `${SOT}/events/iaib` },
+      { label: "uGNET", href: `${SOT}/uGNET` },
+      { label: "EDP", href: `${SOT}/edp` },
+    ],
+  },
+  { label: "Catalyst", href: `${SOT}/catalyst` },
+  {
+    label: "Help and Support",
+    links: [
+      { label: "Admissions", href: "#admission" },
+      { label: "FAQs", href: "#faqs" },
+      { label: "Blogs", href: `${SOT}/blogs` },
+      { label: "Get in Touch", href: `${SOT}/contactus` },
+    ],
+  },
+];
+
 /**
  * Split floating nav — no full-width bar.
  *
@@ -37,8 +90,13 @@ const NAV_LINKS = [
  * (blurred, hairline bottom edge) so it never sits on top of section content.
  * Over the dark sections (Pathways, Leaders) it switches to a dark bar (white logo and
  * links, white tab and Menu button), as makro.framer.website does.
- * Menu opens a full-screen sheet: it wipes down from the top, big links rise
- * in one by one, with the campus image and admissions contact alongside.
+ * Menu opens a full-screen sheet: it wipes down from the top and the MENU
+ * rows rise in one by one, numbered. Beside them, a pane the same height as
+ * the list: the campus image, Apply Now, Get in Touch and the admissions
+ * number — or, while a group row is hovered or clicked (desktop), that
+ * group's links as cards, swapped in place so the layout never shifts. Below
+ * lg a group opens under its name instead. The sheet scrolls if the list
+ * grows past the screen.
  * Esc or Close dismisses it; smooth scroll is paused while it is open.
  */
 export function Navbar() {
@@ -47,6 +105,8 @@ export function Navbar() {
   const tl = useRef<gsap.core.Timeline | null>(null);
 
   const [open, setOpen] = useState(false);
+  /** the menu group opened to show its links (index in MENU), if any */
+  const [group, setGroup] = useState<number | null>(null);
   const [solid, setSolid] = useState(false);
   const [dark, setDark] = useState(false);
   const [tab, setTab] = useState({ left: 0, width: 0, index: 0 });
@@ -146,7 +206,39 @@ export function Navbar() {
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
-  const close = () => setOpen(false);
+  const close = () => {
+    setOpen(false);
+    setGroup(null);
+  };
+  const openGroup = group === null ? null : MENU[group];
+
+  /** a link inside a group: a small card (bigger when the group has few) */
+  const subLink = (link: MenuLink, big = false) => (
+    <Link
+      href={link.href}
+      onClick={close}
+      className={`group/sub flex items-start justify-between gap-3 rounded-[6px] border border-ink/10 bg-white transition-colors duration-300 hover:border-ink ${
+        big ? "p-5" : "px-4 py-3"
+      }`}
+    >
+      <span className="min-w-0">
+        <span className={`block font-semibold leading-snug text-ink transition-colors duration-300 group-hover/sub:text-accent ${big ? "text-[17px]" : "text-[15px]"}`}>
+          {link.label}
+        </span>
+        {link.note && <span className="mt-1 block text-[13px] text-body">{link.note}</span>}
+        {link.tag && (
+          <span className="mt-2.5 inline-block rounded-[4px] bg-accent px-1.5 py-0.5 text-[10.5px] font-bold text-white">
+            {link.tag}
+          </span>
+        )}
+      </span>
+      <ArrowUpRight
+        size={16}
+        aria-hidden
+        className="mt-0.5 shrink-0 text-ink/30 transition-all duration-300 group-hover/sub:rotate-45 group-hover/sub:text-accent"
+      />
+    </Link>
+  );
 
   return (
     <header ref={root}>
@@ -253,70 +345,150 @@ export function Navbar() {
         data-lenis-prevent
         className="menu-sheet invisible fixed inset-0 z-40 overflow-y-auto bg-[#ffffff]"
       >
-        <div className="container-page grid min-h-full gap-10 pb-10 pt-[112px] lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] lg:items-end lg:gap-16 lg:pb-14">
+        <div className="container-page grid min-h-full content-center gap-10 pb-10 pt-[100px] lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] lg:items-stretch lg:gap-16 lg:pb-12">
+          {/* left: the rows. On desktop a group shows its links in the pane
+              on the right (on hover or click); below lg it opens in place. */}
           <nav aria-label="Site">
-            <p className="menu-fade text-[11px] font-semibold uppercase tracking-[0.2em] text-muted">
-              Navigate
-            </p>
-            <ul className="group/list mt-5">
-              {NAV_LINKS.map((link, i) => (
-                <li key={link.href} className="overflow-hidden border-b border-ink/10">
-                  <Link
-                    href={link.href}
-                    onClick={close}
-                    className="menu-link group flex items-baseline gap-4 py-2 transition-opacity duration-300 group-hover/list:opacity-35 hover:!opacity-100 sm:gap-6"
-                  >
-                    <span className="w-6 font-mono text-[12px] text-accent">0{i + 1}</span>
-                    <span className="font-display text-[clamp(2.25rem,6vw,5rem)] font-bold leading-[1.05] tracking-[-0.04em] text-ink transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-3">
-                      {link.label}
+            <ul className="border-t border-ink/10">
+              {MENU.map((row, i) => {
+                const active = group === i;
+                const head = (
+                  <>
+                    <span className="w-7 shrink-0 font-mono text-[12px] text-accent">{String(i + 1).padStart(2, "0")}</span>
+                    <span
+                      className={`font-display text-[clamp(1.75rem,3vw,2.5rem)] font-bold leading-none tracking-[-0.03em] transition-[color,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-2 ${
+                        active ? "translate-x-2 text-accent" : "text-ink"
+                      }`}
+                    >
+                      {row.label}
                     </span>
-                    <ArrowUpRight
-                      aria-hidden
-                      className="ml-auto size-7 self-center text-accent opacity-0 transition-all duration-500 group-hover:rotate-45 group-hover:opacity-100"
-                    />
-                  </Link>
-                </li>
-              ))}
+                    {row.links ? (
+                      <ArrowRight
+                        aria-hidden
+                        className={`ml-auto size-5 shrink-0 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                          active
+                            ? "text-accent max-lg:-rotate-90 lg:translate-x-1"
+                            : "text-ink/30 group-hover:text-accent max-lg:rotate-90"
+                        }`}
+                      />
+                    ) : (
+                      <ArrowUpRight
+                        aria-hidden
+                        className="ml-auto size-5 shrink-0 text-ink/30 transition-all duration-500 group-hover:rotate-45 group-hover:text-accent"
+                      />
+                    )}
+                  </>
+                );
+                const rowClass = "menu-link group flex w-full items-center gap-4 py-5 text-left sm:gap-6";
+                return (
+                  <li
+                    key={row.label}
+                    className="border-b border-ink/10"
+                    onMouseEnter={() => window.matchMedia("(min-width: 1024px)").matches && setGroup(row.links ? i : null)}
+                  >
+                    <div className="overflow-hidden">
+                      {row.links ? (
+                        <button
+                          type="button"
+                          aria-expanded={active}
+                          onClick={() => setGroup(active ? null : i)}
+                          className={rowClass}
+                        >
+                          {head}
+                        </button>
+                      ) : (
+                        <Link href={row.href ?? "/"} onClick={close} className={rowClass}>
+                          {head}
+                        </Link>
+                      )}
+                    </div>
+
+                    {/* below lg: the group's links, opened under its name */}
+                    {row.links && (
+                      <div
+                        className={`grid transition-[grid-template-rows] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] lg:hidden ${
+                          active ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+                        }`}
+                      >
+                        <div className="overflow-hidden" inert={!active}>
+                          <ul className="grid gap-2 pb-5 sm:grid-cols-2">
+                            {row.links.map((link) => (
+                              <li key={link.href}>{subLink(link)}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           </nav>
 
-          <aside className="flex flex-col gap-6">
-            <div className="menu-fade relative aspect-[16/10] overflow-hidden rounded-[6px]">
-              <Image
-                src="/images/hero/hero-campus.png"
-                alt="Students looking out at the upGrad School of Technology campus"
-                fill
-                sizes="(min-width: 1024px) 40vw, 100vw"
-                className="object-cover object-[85%_80%]"
-              />
-            </div>
-            <div className="menu-fade">
-              <p className="font-display text-[22px] font-bold leading-tight tracking-[-0.02em] text-ink">
-                AI-First B.Tech in <span className="text-accent">Computer Science</span>
-              </p>
-              <p className="mt-1.5 text-[14px] text-body">Admission starts with uGNET</p>
-            </div>
-            <div className="menu-fade flex flex-wrap items-center gap-3">
-              <GlowButton href="#apply" streak="#0b0d12" onClick={close}>
-                Apply Now
-                <ArrowRight size={16} strokeWidth={2.2} aria-hidden />
-              </GlowButton>
-              <Link
-                href="#visit"
-                onClick={close}
-                className="inline-flex items-center rounded-[6px] border border-ink/25 px-6 py-[14.5px] text-[15px] font-semibold text-ink transition-colors hover:border-ink hover:bg-ink hover:text-white"
-              >
-                Get in Touch
-              </Link>
-            </div>
-            <a
-              href="tel:18002108080"
-              className="menu-fade inline-flex items-center gap-2 text-[14px] text-body transition-colors hover:text-ink"
-            >
-              <Phone size={14} aria-hidden />
-              Admissions: <span className="font-semibold text-ink">1800 210 8080</span>
-            </a>
-          </aside>
+          {/* right: the programme card, or on desktop the open group's links
+              in its place — the same box either way, so nothing shifts */}
+          <div className="menu-fade relative">
+            {openGroup?.links ? (
+              <div key={openGroup.label} className="flex h-full flex-col rounded-[6px] bg-sunken p-6 max-lg:hidden">
+                <p className="animate-rise font-display text-[24px] font-bold leading-tight tracking-[-0.02em] text-ink">
+                  {openGroup.label}
+                </p>
+                {/* the cards share the pane's height, so a short list fills it
+                    and a long one shrinks to fit (scrolling past a point) */}
+                <ul
+                  className={`mt-5 grid min-h-0 flex-1 auto-rows-[minmax(64px,1fr)] gap-2 overflow-y-auto ${
+                    openGroup.links.length > 2 ? "grid-cols-2" : "grid-cols-1"
+                  }`}
+                >
+                  {openGroup.links.map((link, k) => (
+                    <li key={link.href} className="animate-rise [&>a]:h-full" style={{ animationDelay: `${60 + k * 45}ms` }}>
+                      {subLink(link, openGroup.links!.length <= 2)}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+
+            <aside className={`flex h-full flex-col gap-5 ${openGroup?.links ? "lg:hidden" : ""}`}>
+              <div className="relative aspect-[16/9] overflow-hidden rounded-[6px] lg:aspect-auto lg:min-h-[200px] lg:flex-1">
+                <Image
+                  src="/images/hero/hero-campus.png"
+                  alt="Students looking out at the upGrad School of Technology campus"
+                  fill
+                  sizes="(min-width: 1024px) 40vw, 100vw"
+                  className="object-cover object-[85%_80%]"
+                />
+              </div>
+              <div>
+                <p className="font-display text-[22px] font-bold leading-tight tracking-[-0.02em] text-ink">
+                  AI-First B.Tech in <span className="text-accent">Computer Science</span>
+                </p>
+                <p className="mt-1.5 text-[14px] text-body">Admission starts with uGNET</p>
+              </div>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex flex-wrap items-center gap-3">
+                  <GlowButton href="#apply" streak="#0b0d12" onClick={close}>
+                    Apply Now
+                    <ArrowRight size={16} strokeWidth={2.2} aria-hidden />
+                  </GlowButton>
+                  <Link
+                    href="#visit"
+                    onClick={close}
+                    className="inline-flex items-center rounded-[6px] border border-ink/25 px-6 py-[14.5px] text-[15px] font-semibold text-ink transition-colors hover:border-ink hover:bg-ink hover:text-white"
+                  >
+                    Get in Touch
+                  </Link>
+                </div>
+                <a
+                  href="tel:18002108080"
+                  className="inline-flex items-center gap-2 text-[14px] text-body transition-colors hover:text-ink"
+                >
+                  <Phone size={14} aria-hidden />
+                  <span className="font-semibold text-ink">1800 210 8080</span>
+                </a>
+              </div>
+            </aside>
+          </div>
         </div>
       </div>
     </header>
