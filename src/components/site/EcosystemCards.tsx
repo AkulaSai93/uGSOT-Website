@@ -40,7 +40,7 @@ type Card = {
 const CARDS: Card[] = [
   {
     name: "upGrad",
-    file: "fig-upgrad.png",
+    file: "fig-upgrad.webp",
     ml: 0,
     mt: 0.06,
     bw: 206.227,
@@ -57,7 +57,7 @@ const CARDS: Card[] = [
   },
   {
     name: "Internshala",
-    file: "fig-internshala.png",
+    file: "fig-internshala.webp",
     ml: 157.7,
     mt: 13,
     bw: 156.142,
@@ -74,7 +74,7 @@ const CARDS: Card[] = [
   },
   {
     name: "upGrad Enterprise",
-    file: "fig-enterprise.png",
+    file: "fig-enterprise.webp",
     ml: 288.7,
     mt: 0,
     bw: 188.642,
@@ -90,7 +90,7 @@ const CARDS: Card[] = [
   },
   {
     name: "upGrad Abroad",
-    file: "fig-abroad.png",
+    file: "fig-abroad.webp",
     ml: 426.7,
     mt: 6,
     bw: 182.752,
@@ -107,7 +107,7 @@ const CARDS: Card[] = [
   },
   {
     name: "upGrad Rekrut",
-    file: "fig-rekrut.png",
+    file: "fig-rekrut.webp",
     ml: 545.7,
     mt: 2,
     bw: 190.812,
@@ -124,7 +124,7 @@ const CARDS: Card[] = [
   },
   {
     name: "upGrad KnowledgeHut",
-    file: "fig-knowledgehut.png",
+    file: "fig-knowledgehut.webp",
     ml: 705.3,
     mt: 28.61,
     bw: 153.946,

@@ -79,7 +79,7 @@ function AwardCard({ a, copy }: { a: (typeof AWARDS)[number]; copy: boolean }) {
     >
       {/* eslint-disable-next-line @next/next/no-img-element -- small logos, served as they are */}
       <img
-        src={`/images/awards/${a.logo}.png`}
+        src={`/images/awards/${a.logo}.webp`}
         alt={copy ? "" : a.source}
         className="h-14 w-auto max-w-[200px] object-contain"
         loading="lazy"

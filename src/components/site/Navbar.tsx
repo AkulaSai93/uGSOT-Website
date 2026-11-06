@@ -105,6 +105,9 @@ export function Navbar() {
   const tl = useRef<gsap.core.Timeline | null>(null);
 
   const [open, setOpen] = useState(false);
+  /** the menu's picture is only fetched once the menu is first opened */
+  const [menuSeen, setMenuSeen] = useState(false);
+  if (open && !menuSeen) setMenuSeen(true);
   /** the menu group opened to show its links (index in MENU), if any */
   const [group, setGroup] = useState<number | null>(null);
   const [solid, setSolid] = useState(false);
@@ -451,13 +454,15 @@ export function Navbar() {
 
             <aside className={`flex h-full flex-col gap-5 ${openGroup?.links ? "lg:hidden" : ""}`}>
               <div className="relative aspect-[16/9] overflow-hidden rounded-[6px] lg:aspect-auto lg:min-h-[200px] lg:flex-1">
-                <Image
-                  src="/images/hero/hero-campus.png"
-                  alt="Students looking out at the upGrad School of Technology campus"
-                  fill
-                  sizes="(min-width: 1024px) 40vw, 100vw"
-                  className="object-cover object-[85%_80%]"
-                />
+                {menuSeen && (
+                  <Image
+                    src="/images/hero/hero-campus.png"
+                    alt="Students looking out at the upGrad School of Technology campus"
+                    fill
+                    sizes="(min-width: 1024px) 40vw, 100vw"
+                    className="object-cover object-[85%_80%]"
+                  />
+                )}
               </div>
               <div>
                 <p className="font-display text-[22px] font-bold leading-tight tracking-[-0.02em] text-ink">

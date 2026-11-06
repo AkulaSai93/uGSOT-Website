@@ -1,5 +1,6 @@
 import { Reveal } from "@/components/motion/Reveal";
 import { SectionHeading } from "@/components/site/SectionHeading";
+import { LazyVideo } from "@/components/site/LazyVideo";
 
 /**
  * "How We're Built Different" — reproduced from sot.upgrad.com, built from that
@@ -33,42 +34,42 @@ const FEATURES = [
   {
     title: "Future-Ready Curriculum",
     body: "Stay updated with the latest in GenAI, MLOps, Quantum Computing, and Cybersecurity every six months.",
-    icon: "brain.gif",
+    icon: "brain",
   },
   {
     title: "WorkX360 Internship Program",
     body: "Get access to paid, real-world experience through rotational internships with top startups and companies.",
-    icon: "intern.gif",
+    icon: "intern",
   },
   {
     title: "Global Learning Experience",
     body: "Explore semester-abroad programs and global competitions for wider exposure.",
-    icon: "map.gif",
+    icon: "map",
   },
   {
     title: "Innovation Through Action",
     body: "Regular hackathons, open-source projects, and sponsorships for GSoC, ICPC, and NASA contests.",
-    icon: "system.gif",
+    icon: "system",
   },
   {
     title: "Personalized Growth Tracks",
     body: "Choose your path—high-paying jobs, entrepreneurship, or research—from the very first day.",
-    icon: "root.gif",
+    icon: "root",
   },
   {
     title: "Lifelong Career Support",
     body: "Get internship and job application support for your career growth.",
-    icon: "career.gif",
+    icon: "career",
   },
   {
     title: "Smart Scholarships & Support",
     body: "Access up to 100% scholarships with flexible, stress-free financing options.",
-    icon: "scholar.gif",
+    icon: "scholar",
   },
   {
     title: "Strong Network, Strong Careers",
     body: "Connect with 3000+ hiring partners and benefit from active alumni-driven placements.",
-    icon: "placement.gif",
+    icon: "placement",
   },
 ] as const;
 
@@ -110,13 +111,11 @@ export function BuiltDifferent() {
 
               <div className="relative flex flex-col items-center px-6 sm:px-8 md:px-10">
                 <div className="relative z-10 mb-4 flex size-20 items-center justify-center sm:mb-6 sm:size-24 md:size-28">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={`/images/built/${feature.icon}`}
-                    alt=""
-                    width={112}
-                    height={112}
-                    loading="lazy"
+                  {/* the animated icon: once a 3.2MB set of GIFs, now short
+                      looping MP4s on the section's white (584KB in all),
+                      loaded only as they near the screen */}
+                  <LazyVideo
+                    sources={[{ src: `/images/built/${feature.icon}.mp4` }]}
                     className="pointer-events-none h-full w-full select-none object-contain transition-all duration-300 group-hover/feature:scale-110"
                   />
                 </div>

@@ -19,6 +19,8 @@ import { Admission } from "@/components/sections/Admission";
 import { Toolkit } from "@/components/sections/Toolkit";
 import { Testimonials } from "@/components/sections/Testimonials";
 import { Faqs } from "@/components/sections/Faqs";
+import { Mentorship } from "@/components/sections/Mentorship";
+import { Social } from "@/components/sections/Social";
 import { Footer } from "@/components/site/Footer";
 
 export default function Home() {
@@ -37,6 +39,7 @@ export default function Home() {
         <Campuses />
         <Leaders />
         <Faculty />
+        <Mentorship />
         <Festivals />
         <IITRace />
         <Spotlight />
@@ -46,6 +49,7 @@ export default function Home() {
         <Admission />
         <Toolkit />
         <Testimonials />
+        <Social />
         <Faqs />
       </main>
       <Footer />

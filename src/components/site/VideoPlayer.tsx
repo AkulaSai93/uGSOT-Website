@@ -8,10 +8,17 @@ import { lenis } from "@/components/motion/SmoothScroll";
 
 gsap.registerPlugin(useGSAP);
 
-export type Video = { id: string; name: string; thumb: string };
+export type Video = {
+  id: string;
+  name: string;
+  thumb: string;
+  /** an upright Short: played in a 9:16 frame */
+  vertical?: boolean;
+};
 
 /**
- * YouTube player overlay: a white, blurred backdrop with the video centred.
+ * YouTube player overlay: a white, blurred backdrop with the video centred
+ * (in a 9:16 frame for upright Shorts).
  * Closes on Esc, the close button, or a click outside the video; Lenis is
  * paused while it is open so the page underneath doesn't scroll.
  */
@@ -41,11 +48,15 @@ export function VideoPlayer({ video, onClose }: { video: Video; onClose: () => v
       ref={root}
       role="dialog"
       aria-modal="true"
-      aria-label={`Podcast: ${video.name}`}
+      aria-label={`Video: ${video.name}`}
       onClick={onClose}
       className="fixed inset-0 z-[100] grid place-items-center bg-white/85 p-4 backdrop-blur-md sm:p-10"
     >
-      <div data-frame className="relative w-full max-w-[1100px]" onClick={(e) => e.stopPropagation()}>
+      <div
+        data-frame
+        className={video.vertical ? "relative" : "relative w-full max-w-[1100px]"}
+        onClick={(e) => e.stopPropagation()}
+      >
         <button
           type="button"
           onClick={onClose}
@@ -54,7 +65,13 @@ export function VideoPlayer({ video, onClose }: { video: Video; onClose: () => v
         >
           <X size={18} strokeWidth={2} />
         </button>
-        <div className="aspect-video overflow-hidden rounded-[6px] bg-ink shadow-[0_40px_80px_-30px_rgba(11,13,18,0.6)]">
+        <div
+          className={`overflow-hidden rounded-[6px] bg-ink shadow-[0_40px_80px_-30px_rgba(11,13,18,0.6)] ${
+            video.vertical
+              ? "aspect-[9/16] h-[min(78svh,760px)] max-w-[calc(100vw-2rem)]"
+              : "aspect-video"
+          }`}
+        >
           <iframe
             src={`https://www.youtube-nocookie.com/embed/${video.id}?autoplay=1&rel=0`}
             title={video.name}

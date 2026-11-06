@@ -15,9 +15,16 @@ import { HeroFacts } from "@/components/site/HeroFacts";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
-/** Existing upGrad SoT hero footage. Swap for a self-hosted /videos/hero.webm later. */
-const VIDEO_BASE =
-  "https://dd848r0fq5a5i.cloudfront.net/asset-optimization/video/landing_herosection_video/landing_herosection_video";
+/** The upGrad SoT hero footage, re-encoded and served from the site
+ *  (public/videos/hero): the CloudFront originals were 8.3MB (webm, which
+ *  Chrome picked) and 5.9MB (mp4). These are 3.2MB at 720p for desktop and
+ *  1.9MB at 480p for phones, 24fps, with a poster frame so the pill shows a
+ *  picture at once. */
+const VIDEO = {
+  desktop: "/videos/hero/hero-720.mp4",
+  phone: "/videos/hero/hero-480.mp4",
+  poster: "/videos/hero/hero-poster.jpg",
+};
 
 /**
  * Hero — "the campus opens up".
@@ -256,7 +263,7 @@ export function Hero() {
               src="/images/hero/hero-skyline.jpg"
               alt=""
               fill
-              priority
+              fetchPriority="high"
               sizes="100vw"
               className="object-cover object-[100%_100%] max-lg:hidden"
             />
@@ -267,7 +274,7 @@ export function Hero() {
               src="/images/hero/hero-skyline-mobile.jpg"
               alt=""
               fill
-              priority
+              fetchPriority="high"
               sizes="100vw"
               className="object-cover object-bottom lg:hidden"
             />
@@ -294,11 +301,12 @@ export function Hero() {
             muted
             loop
             playsInline
-            preload="auto"
+            preload="metadata"
+            poster={VIDEO.poster}
             className="hero-video absolute inset-0 size-full object-cover"
           >
-            <source src={`${VIDEO_BASE}.webm`} type="video/webm" />
-            <source src={`${VIDEO_BASE}.mp4`} type="video/mp4" />
+            <source media="(max-width: 1023px)" src={VIDEO.phone} type="video/mp4" />
+            <source src={VIDEO.desktop} type="video/mp4" />
           </video>
           {/* Bottom fade into the page canvas below, so the full-bleed film
               has no hard edge. Hidden while the film is still a pill. */}

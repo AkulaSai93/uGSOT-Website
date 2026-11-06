@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Reveal } from "@/components/motion/Reveal";
+import { LazyVideo } from "@/components/site/LazyVideo";
 import { SectionHeading } from "@/components/site/SectionHeading";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -33,7 +34,8 @@ gsap.registerPlugin(ScrollTrigger);
  * Type follows the site-wide section style: bold display with the red accent
  * words in the Bricolage Grotesque accent face.
  *
- * CENTRE VIDEO: currently the hero footage (CloudFront, webm + mp4). The
+ * CENTRE VIDEO: currently the hero footage (self-hosted, loaded only as the
+ * section nears the screen — see LazyVideo). The
  * section's own clip is on disk at public/videos/best-of-both.mp4. The slot
  * keeps a brand-tinted panel behind the video so there is never a black flash
  * before the first frame decodes.
@@ -41,11 +43,13 @@ gsap.registerPlugin(ScrollTrigger);
  * Sizing follows the reference, whose stage is 900x570 in a 1440 viewport —
  * about 62% of the width and 63% of the height.
  */
-/** Hero footage, reused here for now. The file supplied for this section is
- *  kept at public/videos/best-of-both.mp4 and can be swapped back in by
- *  pointing VIDEO_BASE's <source> list at it. */
-const HERO_VIDEO =
-  "https://dd848r0fq5a5i.cloudfront.net/asset-optimization/video/landing_herosection_video/landing_herosection_video";
+/** Hero footage, reused here for now (the same self-hosted 720p file as the
+ *  hero, so a visitor downloads it once). The file supplied for this section
+ *  is kept at public/videos/best-of-both.mp4 and can be swapped back in here. */
+const HERO_VIDEO = {
+  src: "/videos/hero/hero-720.mp4",
+  poster: "/videos/hero/hero-poster.jpg",
+};
 
 /* The heading is two lines sliced vertically down the middle: the left block
    holds the start of both lines, the right block the end. Converged they read
@@ -425,17 +429,11 @@ export function BestOfBoth() {
                 }}
               >
                 <span className="absolute left-0 top-1/2 block w-full -translate-y-1/2 overflow-hidden rounded-[6px] bg-[linear-gradient(145deg,#e9edf4,#f3e6e8)] [height:min(68vh,620px)]">
-                  <video
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    preload="auto"
+                  <LazyVideo
+                    sources={[{ src: HERO_VIDEO.src }]}
+                    poster={HERO_VIDEO.poster}
                     className="size-full object-cover"
-                  >
-                    <source src={`${HERO_VIDEO}.webm`} type="video/webm" />
-                    <source src={`${HERO_VIDEO}.mp4`} type="video/mp4" />
-                  </video>
+                  />
                 </span>
               </span>
 

@@ -38,6 +38,7 @@ export function SectionHeading({
   breakBeforeAccent = false,
   phoneBreakBefore,
   titleClassName = "",
+  accentClassName = "text-accent",
   align = "center",
   size = "lg",
   className = "",
@@ -54,6 +55,8 @@ export function SectionHeading({
   phoneBreakBefore?: string;
   /** extra classes for the h2, e.g. a phone font size that fits its lines */
   titleClassName?: string;
+  /** the accent phrase's colour, for headings on a red ground */
+  accentClassName?: string;
   align?: "center" | "left";
   size?: keyof typeof SIZE;
   className?: string;
@@ -104,7 +107,7 @@ export function SectionHeading({
           key={`${w}-${i}`}
           className={
             accentWord
-              ? "font-[family-name:var(--font-bricolage)] font-semibold tracking-[-0.01em] text-accent"
+              ? `font-[family-name:var(--font-bricolage)] font-semibold tracking-[-0.01em] ${accentClassName}`
               : ""
           }
         >

@@ -221,7 +221,6 @@ export function Campuses() {
                       // phones show the photo at about 2x the frame's width, larger on dense screens
                       sizes="(min-width: 1280px) 1232px, (min-width: 1024px) 100vw, 1200px"
                       className={`object-cover ${campus.phoneFit}`}
-                      priority={i === 0}
                     />
                   </div>
                 </div>

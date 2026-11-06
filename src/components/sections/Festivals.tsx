@@ -131,7 +131,6 @@ export function Festivals() {
                           alt={`${f.name} celebrations at ${f.campus}`}
                           fill
                           sizes="(min-width: 1024px) 460px, 80vw"
-                          loading="eager"
                           className="object-cover"
                         />
                       </div>
