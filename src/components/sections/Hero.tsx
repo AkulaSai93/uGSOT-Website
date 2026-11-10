@@ -250,7 +250,7 @@ export function Hero() {
     >
       <div
         ref={stage}
-        className="sticky top-0 isolate h-svh min-h-[640px] overflow-clip"
+        className="sticky top-0 isolate h-svh min-h-[640px] overflow-clip max-lg:h-dvh"
       >
         {/* --------------------------------------------- background image */}
         {/* Full-bleed illustration, Conclave-style: students looking out at a
@@ -284,9 +284,9 @@ export function Hero() {
               is, lighter at the top and the foot so the sky and the
               students still show */}
           <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.75)_0%,rgba(255,255,255,0.4)_40%,rgba(255,255,255,0)_60%)] max-lg:bg-[linear-gradient(180deg,rgba(255,255,255,0.2)_0%,rgba(255,255,255,0.5)_22%,rgba(255,255,255,0.66)_50%,rgba(255,255,255,0.4)_70%,rgba(255,255,255,0)_82%)]" />
-          {/* phones: a black overlay rising from the foot, under the white
-              company logos */}
-          <div className="absolute inset-x-0 bottom-0 h-[34%] bg-[linear-gradient(0deg,rgba(0,0,0,0.82)_0%,rgba(0,0,0,0.55)_40%,rgba(0,0,0,0)_100%)] lg:hidden" />
+          {/* phones: a black overlay low at the foot, just under the white
+              company logos, leaving the students above it clear */}
+          <div className="absolute inset-x-0 bottom-0 h-[16%] bg-[linear-gradient(0deg,rgba(0,0,0,0.8)_0%,rgba(0,0,0,0.5)_50%,rgba(0,0,0,0)_100%)] lg:hidden" />
         </div>
 
         {/* ------------------------------------------- the campus film (pill → full bleed) */}
@@ -317,12 +317,14 @@ export function Hero() {
         </div>
 
         {/* ------------------------------------------------------- act 1 */}
-        <div className="container-page relative z-10 flex h-full flex-col justify-center pb-[118px] pt-[72px] lg:pb-8 lg:pt-[88px]">
+        <div className="container-page relative z-10 flex h-full flex-col justify-start pb-[118px] pt-[clamp(84px,12svh,112px)] lg:justify-center lg:pb-8 lg:pt-[88px]">
           {/* The words are the heading's real text (one mask each, real spaces
               between), so it reads, selects and copies as written. */}
           {/* Below lg (phones, mostly) the whole block is centred and a size
               up: the headline (sized so "Computer Science" holds one line),
-              the lines under it, the facts and full-width buttons. */}
+              the lines under it, the facts and full-width buttons. It sits
+              from the top rather than the middle, so the students in the
+              picture show between the buttons and the logos. */}
           <h1 className="font-display text-[min(10.2vw,8.6vh)] font-bold leading-[0.95] tracking-[-0.04em] max-lg:text-center max-lg:leading-[1.08] sm:text-[min(9vw,8.6vh)] lg:text-[min(6vw,9.5vh)]">
             <span className="block">
               <span className="hero-line-1 block">

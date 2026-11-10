@@ -203,7 +203,7 @@ function ScholarshipCard({ s }: { s: Scholarship }) {
             <button
               type="button"
               onClick={() => turn(false)}
-              className="text-[13px] font-semibold text-white/80 underline-offset-4 transition-colors hover:text-white hover:underline"
+              className="text-[13px] font-semibold text-white/80 transition-colors hover:text-white"
             >
               Back
             </button>

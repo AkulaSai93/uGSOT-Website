@@ -3,7 +3,7 @@
  * (@upGradSchoolofTechnology, channel UCh74gkhPCTm0wOMPlMeW36A), taken from
  * its public upload feed on 6 Nov 2026: each video's id and its title as
  * published. Thumbnails are the channel's own (the Shorts' upright 1080x1920
- * frames and the films' 1280x720 ones), saved to public/images/channel as
+ * frames and the films' 1280x720 ones), saved to public/images/channel-v2 as
  * WebP. Refresh this list when the channel posts new clips.
  */
 export type ChannelVideo = {
@@ -20,7 +20,7 @@ export const SPEAKERS = {
   vishwa: { name: "Vishwa Mohan", role: "CEO, upGrad School of Technology" },
 } as const;
 
-export const thumb = (v: ChannelVideo) => `/images/channel/${v.id}.webp`;
+export const thumb = (v: ChannelVideo) => `/images/channel-v2/${v.id}.webp`;
 
 /** sessions with upGrad's leadership, speaking to students on campus */
 export const MENTOR_CLIPS: ChannelVideo[] = [

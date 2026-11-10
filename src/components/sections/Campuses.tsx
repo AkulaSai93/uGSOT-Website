@@ -260,7 +260,7 @@ export function Campuses() {
               {/* black fade along the bottom of the photo, under the details */}
               <span
                 aria-hidden
-                className="pointer-events-none absolute inset-x-0 bottom-0 z-[5] h-[60%] bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.45)_45%,rgba(0,0,0,0.85)_100%)] max-lg:h-[58%] max-lg:bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.35)_40%,rgba(0,0,0,0.78)_100%)]"
+                className="pointer-events-none absolute inset-x-0 bottom-0 z-[5] h-[60%] bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.45)_45%,rgba(0,0,0,0.85)_100%)] max-lg:h-[78%] max-lg:bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.5)_35%,rgba(0,0,0,0.72)_60%,rgba(0,0,0,0.88)_100%)]"
               />
               {/* details, white type straight on the photo's dark lower edge */}
               <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col items-center gap-6 p-6 text-center sm:p-8 lg:flex-row lg:items-end lg:justify-between lg:p-10 lg:text-left">
