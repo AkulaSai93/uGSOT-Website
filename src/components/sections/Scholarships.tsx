@@ -133,6 +133,8 @@ function ScholarshipCard({ s }: { s: Scholarship }) {
             <div className="relative min-h-0 flex-1 overflow-hidden">
               <Image
                 src={`/images/scholarships/flat/${s.art}`}
+                // flat art shows compression on its edges, so serve it crisp
+                quality={90}
                 alt=""
                 fill
                 sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 80vw"

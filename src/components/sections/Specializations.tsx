@@ -14,13 +14,17 @@ gsap.registerPlugin(useGSAP);
  *
  * Copy from sot.upgrad.com — heading, intro and the six domains, verbatim.
  *
- * Tile art (public/images/specializations/v4) was generated with Figma AI after
- * the "Two years. One serious transformation." cards on sot.upgrad.com/catalyst:
- * one hero object that tells the domain's story (a neural-glass brain, a
- * laptop mid-build, a quantum chandelier, chained blocks, a locked shield, a
- * cloud over servers) lit on a dark striped stage, with glossy icon tiles
- * floating round it. Every tile has its own tint (violet, navy, teal, emerald,
- * crimson, sky) and keeps its lower area dark for the white title.
+ * Tile art (public/images/specializations/v9) is Figma AI illustration in the
+ * premium style the client chose for the scholarship cards: flat shapes, a
+ * dramatic close-up with a giant foreshortened hand, a vivid colour over a
+ * black ground. Each domain has its own colour and gesture: a side-on
+ * high-five between a student and a robot (purple; redrawn without the giant
+ * hand, whose fingers came out malformed), dragging a browser window into place (orange), a
+ * glowing atom in an open palm (teal), snapping the last block onto a chain
+ * (green), a stop-hand behind a padlock shield (red), pressing an upload
+ * button to the cloud (blue). The scenes sit in the picture's middle so a
+ * centred cover crop keeps them in the open panel, and the black ground
+ * carries the white title.
  *
  * Layout: expanding panels. All six sit side by side as tall strips; the
  * active one (hovered, focused or tapped — AI/ML to start) widens to show its
@@ -39,62 +43,42 @@ gsap.registerPlugin(useGSAP);
  * would kill that reveal and leave the strips faded out.
  * Hover waits a beat (70ms) before switching, so a quick pass doesn't flicker.
  */
-/** `fit` places each picture in the open panel (nearly square on desktop,
- *  taller than wide on phones): the wide AI & ML and Cloud pictures have their
- *  subject right of centre, so they sit to the right; the square Blockchain
- *  picture keeps its top chain link clear of the panel's top edge.
- *
- *  `phone` is for those two wide pictures on phones, where a cover crop of the
- *  near-square panel cut off the icons round the subject: the picture is
- *  sized to the panel's width so the whole group (subject and its four
- *  icons) fits across it, centred — `w` the picture's width and `left` its
- *  offset, both as shares of the panel's width — and centred top to bottom,
- *  the thin bands left above and below filled with the picture's own edge
- *  colours (`bg`) so they don't show. */
 const SPECIALIZATIONS = [
   {
     title: "Artificial Intelligence & Machine Learning",
     short: "AI & Machine Learning",
     body: "Build intelligent systems that learn and adapt",
     key: "aiml",
-    fit: "object-[70%_50%] lg:object-[96%_50%]",
-    phone: { w: "176%", left: "-67.4%", bg: "linear-gradient(180deg,#250d53,#33106a)" },
   },
   {
     title: "FullStack Web Development",
     short: "FullStack Web Development",
     body: "Create modern web applications end-to-end",
     key: "webdev",
-    fit: "object-center",
   },
   {
     title: "Quantum Computing",
     short: "Quantum Computing",
     body: "Explore next-generation computational power",
     key: "quantum",
-    fit: "object-center",
   },
   {
     title: "Blockchain",
     short: "Blockchain",
     body: "Master decentralized technologies and Web3",
     key: "blockchain",
-    fit: "object-center lg:object-[50%_15%]",
   },
   {
     title: "Cybersecurity",
     short: "Cybersecurity",
     body: "Protect systems with advanced security practices",
     key: "cybersecurity",
-    fit: "object-center",
   },
   {
     title: "Cloud Innovation",
     short: "Cloud Innovation",
     body: "Design scalable cloud-native architectures",
     key: "cloud",
-    fit: "object-[70%_50%] lg:object-[92%_50%]",
-    phone: { w: "180%", left: "-69.7%", bg: "linear-gradient(180deg,#052661,#092c6a)" },
   },
 ] as const;
 
@@ -138,37 +122,22 @@ function Panel({
           `scale` property and would compound with GSAP's transform */}
       <div
         data-img
-        className={`absolute inset-0 -z-10 max-lg:[background:var(--phone-bg)] ${active ? "" : "opacity-55"}`}
-        style={"phone" in spec ? { ["--phone-bg" as string]: spec.phone.bg } : undefined}
+        className={`absolute inset-0 -z-10 ${active ? "" : "opacity-55"}`}
       >
-        {"phone" in spec ? (
-          // phones: the whole picture, sized to the panel's width (see `phone`)
-          <div
-            className="absolute inset-0 max-lg:inset-auto max-lg:left-[var(--pl)] max-lg:top-1/2 max-lg:aspect-[1536/864] max-lg:w-[var(--pw)] max-lg:-translate-y-1/2"
-            style={{ ["--pw" as string]: spec.phone.w, ["--pl" as string]: spec.phone.left }}
-          >
-            <Image
-              src={`/images/specializations/v4/${spec.key}.jpg`}
-              alt=""
-              fill
-              sizes="(min-width: 1024px) 60vw, 180vw"
-              className={`object-cover ${spec.fit}`}
-            />
-          </div>
-        ) : (
-          <Image
-            src={`/images/specializations/v4/${spec.key}.jpg`}
-            alt=""
-            fill
-            sizes="(min-width: 1024px) 60vw, 100vw"
-            className={`object-cover ${spec.fit}`}
-          />
-        )}
+        <Image
+          src={`/images/specializations/v9/${spec.key}.webp`}
+          // flat art shows compression on its edges, so serve it crisp
+          quality={90}
+          alt=""
+          fill
+          sizes="(min-width: 1024px) 60vw, 100vw"
+          className="object-cover"
+        />
       </div>
       {/* scrim: heavy at the bottom for the copy, lighter on the closed spines */}
       <span
         aria-hidden
-        className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(0,0,0,0.15)_0%,rgba(0,0,0,0)_35%,rgba(0,0,0,0.8)_100%)]"
+        className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(0,0,0,0.15)_0%,rgba(0,0,0,0)_35%,rgba(0,0,0,0.75)_100%)]"
       />
 
       {/* index: top-left; on a mobile bar it sits level with the name */}
