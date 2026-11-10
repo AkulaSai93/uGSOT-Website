@@ -6,7 +6,6 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { ArrowUpRight, RotateCcw } from "lucide-react";
-import { SectionHeading } from "@/components/site/SectionHeading";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -17,14 +16,17 @@ gsap.registerPlugin(ScrollTrigger, useGSAP);
  * scholarships with their eligibility text and the "Know More" link (to the
  * uGNET page, as there).
  *
- * Layout after the client's reference (a "Learn. Finish. Get Your Fee Back."
- * band, Figma node 232:4483): a full-width black band with that frame's wavy
- * edges top and bottom (see Wave); the heading and its
- * line centred in white, and the four scholarships as the section's original flip
- * cards (see ScholarshipCard). "Check eligibility" sits under them.
+ * Layout: a full-width band in warm yellow (the same as Special Mentorship's).
+ * The heading is set like a headline: "Get Upto" above a
+ * huge "100%" (its % in brand red) with "Scholarship" under it; on the right,
+ * the line and "Check eligibility", with the hero's moving line round its
+ * edge. Under a hairline, the four scholarships as the section's original flip
+ * cards (see ScholarshipCard) — on phones a row to swipe through, a card at a
+ * time.
  *
- * Motion (GSAP, as the band comes into view): the cards rise in one after
- * another.
+ * Motion (GSAP, as the band comes into view): the "100" counts up from 0
+ * while the heading rises in, then the cards rise in one after another. Under
+ * reduced motion everything simply shows, at 100.
  */
 const UGNET = "https://sot.upgrad.com/uGNET";
 
@@ -64,37 +66,6 @@ const SCHOLARSHIPS: Scholarship[] = [
   },
 ];
 
-/** the band's black */
-const BAND = "#0b0b0d";
-
-/* ------------------------------------------------------------ the edges */
-
-/**
- * One wavy edge of the band, from the client's Figma frame (Tutedude
- * Hackathon, node 232:4483): its wave vector as drawn there (wave-fill.svg,
- * 1440 x 34.25) over the top 81.73% of a 41.9px strip, turned 180 degrees as
- * in the frame (the foot's strip is also flipped top to bottom). The frame's
- * outline along the wave is left off, so the edge is plain black.
- *
- * The vector is used as a mask, so the wave takes the band's black, and
- * repeats across the width: nine 160px waves per 1440px tile, so they meet
- * seamlessly and keep their size on any screen. Below sm the whole strip is
- * drawn at half size.
- */
-function Wave({ foot = false }: { foot?: boolean }) {
-  return (
-    <div
-      aria-hidden
-      className={`relative h-[21px] w-full sm:h-[41.905px] ${foot ? "-scale-x-100" : "rotate-180"}`}
-    >
-      <span
-        className="absolute inset-x-0 bottom-[18.27%] top-0 [mask-image:url(/images/scholarships/wave/wave-fill.svg)] [mask-repeat:repeat-x] [mask-size:720px_100%] sm:[mask-size:1440px_100%]"
-        style={{ background: BAND }}
-      />
-    </div>
-  );
-}
-
 /* ------------------------------------------------------------ a card */
 
 /**
@@ -122,7 +93,7 @@ function ScholarshipCard({ s }: { s: Scholarship }) {
   };
 
   return (
-    <li data-card className="[perspective:1400px]">
+    <li data-card className="[perspective:1400px] max-sm:w-[78vw] max-sm:shrink-0 max-sm:snap-center">
       <div
         ref={inner}
         className="relative aspect-[4/5] [transform-style:preserve-3d]"
@@ -218,31 +189,42 @@ function ScholarshipCard({ s }: { s: Scholarship }) {
   );
 }
 
+/** the band's warm yellow, as Special Mentorship's */
+const YELLOW = "#ffdf8f";
+
 export function Scholarships() {
   const root = useRef<HTMLElement>(null);
+  const count = useRef<HTMLSpanElement>(null);
 
   useGSAP(
     () => {
       const q = gsap.utils.selector(root);
       const mm = gsap.matchMedia();
       mm.add("(prefers-reduced-motion: no-preference)", () => {
-        const st = {
-          trigger: q("[data-band]")[0],
-          start: "top 75%",
-          toggleActions: "play none none none",
-        };
-        gsap.fromTo(
-          q("[data-card]"),
-          { y: 50, autoAlpha: 0 },
-          {
-            y: 0,
-            autoAlpha: 1,
-            duration: 1,
-            ease: "expo.out",
-            stagger: 0.1,
-            scrollTrigger: st,
-          },
-        );
+        const tl = gsap.timeline({
+          defaults: { ease: "expo.out" },
+          scrollTrigger: { trigger: root.current, start: "top 70%", toggleActions: "play none none none" },
+        });
+        const n = { v: 0 };
+        tl.fromTo(q("[data-rise]"), { y: 40, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 1.1, stagger: 0.1 })
+          .to(
+            n,
+            {
+              v: 100,
+              duration: 1.6,
+              ease: "power3.out",
+              onUpdate: () => {
+                if (count.current) count.current.textContent = String(Math.round(n.v));
+              },
+            },
+            0,
+          )
+          .fromTo(
+            q("[data-card]"),
+            { y: 50, autoAlpha: 0 },
+            { y: 0, autoAlpha: 1, duration: 1, stagger: 0.1 },
+            0.35,
+          );
       });
       return () => mm.revert();
     },
@@ -250,44 +232,46 @@ export function Scholarships() {
   );
 
   return (
-    <section ref={root} id="scholarships" className="bg-canvas py-6 lg:py-10">
-      <div data-band>
-        <Wave />
-        <div
-          style={{ background: BAND }}
-          className="relative z-[1] -my-[2px] py-8 lg:py-12"
-        >
-          <div className="container-page">
-            {/* the heading and its line, centred, in white */}
-            <div
-              style={
-                {
-                  "--heading-fg": "#ffffff",
-                  "--heading-muted": "rgba(255,255,255,0.85)",
-                } as React.CSSProperties
-              }
+    <section ref={root} id="scholarships" style={{ background: YELLOW }} className="relative overflow-hidden py-14 lg:py-24">
+      {/* a soft light across the top left, so the yellow reads rich, not flat */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_70%_at_15%_0%,rgba(255,255,255,0.45),transparent_70%)]"
+      />
+      <div className="container-page relative">
+        <div className="grid items-end gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,380px)] lg:gap-16">
+          <h2 className="text-ink max-lg:text-center">
+            <span data-rise className="block font-display text-[clamp(1.5rem,2.6vw,2.25rem)] font-bold tracking-[-0.025em]">
+              Get Upto
+            </span>
+            <span data-rise className="mt-1 flex flex-wrap items-end gap-x-5 max-lg:justify-center">
+              <span className="font-[family-name:var(--font-bricolage)] text-[clamp(6rem,17vw,14rem)] font-bold leading-[0.82] tracking-[-0.05em] tabular-nums">
+                <span ref={count}>100</span>
+                <span className="text-accent">%</span>
+              </span>
+              <span className="pb-[0.12em] font-display text-[clamp(1.75rem,3.6vw,3.25rem)] font-bold leading-none tracking-[-0.03em]">
+                Scholarship
+              </span>
+            </span>
+          </h2>
+
+          <div data-rise className="max-lg:mx-auto max-lg:max-w-[460px] max-lg:text-center">
+            <p className="text-balance text-[15.5px] leading-[1.6] text-ink/80">
+              Invest in your future with scholarship opportunities that make quality education more affordable and accessible.
+            </p>
+            {/* the hero's moving line: a dark streak sweeping round the edge */}
+            <a
+              href={UGNET}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group relative mt-6 inline-flex overflow-hidden rounded-[6px] p-[1.5px]"
             >
-              <SectionHeading
-                title="Get Upto"
-                accent="100% Scholarship"
-                intro="Invest in your future with scholarship opportunities that make quality education more affordable and accessible."
+              <span
+                aria-hidden
+                style={{ backgroundImage: "conic-gradient(transparent 200deg, #0b0d12)" }}
+                className="cta-glow absolute left-1/2 top-1/2 aspect-square w-[160%]"
               />
-            </div>
-
-            <ul className="mt-8 grid gap-5 sm:grid-cols-2 lg:mt-10 lg:grid-cols-4">
-              {SCHOLARSHIPS.map((s) => (
-                <ScholarshipCard key={s.key} s={s} />
-              ))}
-            </ul>
-
-            <div className="mt-8 flex justify-center lg:mt-10">
-              <a
-                href={UGNET}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group inline-flex items-center gap-2 rounded-[6px] border-solid border-[#0b0d12] bg-white px-6 py-3.5 text-[15px] font-semibold text-ink"
-                style={{ borderWidth: "1.5px 4px 4px 1.5px" }}
-              >
+              <span className="relative z-[2] inline-flex items-center gap-2 rounded-[5px] bg-white px-6 py-3.5 text-[15px] font-semibold text-ink transition-colors duration-300 group-hover:bg-ink group-hover:text-white">
                 Check eligibility
                 <ArrowUpRight
                   size={16}
@@ -295,11 +279,17 @@ export function Scholarships() {
                   aria-hidden
                   className="transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
                 />
-              </a>
-            </div>
+              </span>
+            </a>
           </div>
         </div>
-        <Wave foot />
+
+        {/* below sm, a row to swipe through, a card at a time; above, a grid */}
+        <ul className="mt-10 border-t border-ink/15 pt-10 max-sm:-mx-5 max-sm:flex max-sm:snap-x max-sm:snap-mandatory max-sm:gap-4 max-sm:overflow-x-auto max-sm:px-5 max-sm:pb-2 max-sm:[scrollbar-width:none] sm:grid sm:grid-cols-2 sm:gap-5 lg:mt-14 lg:grid-cols-4 lg:pt-14">
+          {SCHOLARSHIPS.map((s) => (
+            <ScholarshipCard key={s.key} s={s} />
+          ))}
+        </ul>
       </div>
     </section>
   );

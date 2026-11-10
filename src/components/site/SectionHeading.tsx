@@ -147,7 +147,7 @@ export function SectionHeading({
       {intro && (
         <p
           data-heading-fade
-          className={`mt-4 text-[clamp(0.9375rem,1.1vw,1rem)] leading-[1.6] text-[color:var(--heading-muted,var(--ink-body))] ${
+          className={`mt-4 text-balance text-[clamp(0.9375rem,1.1vw,1rem)] leading-[1.6] text-[color:var(--heading-muted,var(--ink-body))] ${
             centred ? "mx-auto max-w-[640px]" : "max-w-[560px]"
           }`}
         >
