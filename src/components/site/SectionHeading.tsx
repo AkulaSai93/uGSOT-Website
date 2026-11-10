@@ -9,9 +9,10 @@ import { MaskWord } from "@/components/motion/MaskWord";
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 /** Display size per heading: "lg" for open sections, "md" where a pinned
- *  stage leaves less vertical room. */
+ *  stage leaves less vertical room. A page can set --section-heading-size to
+ *  size every "lg" heading on it alike (the campus pages do). */
 const SIZE = {
-  lg: "text-[clamp(1.75rem,3vw,2.5rem)]",
+  lg: "text-[length:var(--section-heading-size,clamp(1.75rem,3vw,2.5rem))]",
   md: "text-[clamp(1.5rem,2.6vw,2.25rem)]",
 } as const;
 

@@ -48,8 +48,13 @@ const FAQS = [
 
 const ALL_FAQS = "https://sot.upgrad.com/allFAQs";
 
-export function Faqs() {
+/** `university`: on a campus page, its short name, which the eligibility
+ *  question names in place of "partner universities", as that page does */
+export function Faqs({ university }: { university?: string } = {}) {
   const root = useRef<HTMLElement>(null);
+  const faqs = university
+    ? FAQS.map((f) => ({ ...f, q: f.q.replace("at partner universities", `at ${university}`) }))
+    : FAQS;
   const [open, setOpen] = useState<number | null>(0);
   const first = useRef(true);
 
@@ -137,7 +142,7 @@ export function Faqs() {
           data-list
           className="mx-auto mt-12 flex max-w-[860px] flex-col gap-3 lg:mt-14"
         >
-          {FAQS.map((f, i) => {
+          {faqs.map((f, i) => {
             const isOpen = i === open;
             return (
               <li

@@ -14,6 +14,8 @@ export type Video = {
   thumb: string;
   /** an upright Short: played in a 9:16 frame */
   vertical?: boolean;
+  /** a player URL to use instead of YouTube's (e.g. a Vimeo embed) */
+  src?: string;
 };
 
 /**
@@ -73,7 +75,7 @@ export function VideoPlayer({ video, onClose }: { video: Video; onClose: () => v
           }`}
         >
           <iframe
-            src={`https://www.youtube-nocookie.com/embed/${video.id}?autoplay=1&rel=0`}
+            src={video.src ?? `https://www.youtube-nocookie.com/embed/${video.id}?autoplay=1&rel=0`}
             title={video.name}
             allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
             allowFullScreen

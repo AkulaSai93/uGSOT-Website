@@ -13,15 +13,16 @@ import { SOCIAL } from "./socials";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
-/** sections with a black background: the nav switches to its dark style over them */
-const DARK_SECTIONS = ["pathways", "leaders", "toolkit"];
+/** sections with a black background: the nav switches to its dark style over
+ *  them (campus-hero: the campus pages' film) */
+const DARK_SECTIONS = ["pathways", "leaders", "toolkit", "campus-hero"];
 
 const NAV_LINKS = [
   { label: "Home", href: "/" },
-  { label: "Campuses", href: "#campuses" },
-  { label: "Curriculum", href: "#curriculum" },
-  { label: "FAQs", href: "#faqs" },
-  { label: "Admission", href: "#admission" },
+  { label: "Campuses", href: "/#campuses" },
+  { label: "Curriculum", href: "/#curriculum" },
+  { label: "FAQs", href: "/#faqs" },
+  { label: "Admission", href: "/#admission" },
 ];
 
 const SOT = "https://sot.upgrad.com";
@@ -45,7 +46,7 @@ const MENU: MenuRow[] = [
     links: [
       {
         label: "Sri Siddhartha Academy of Higher Education",
-        href: `${SOT}/university/ssahe`,
+        href: "/university/ssahe",
         note: "Tumkuru (Outer Bangalore), Karnataka",
         tag: "NAAC A+",
       },
@@ -57,8 +58,8 @@ const MENU: MenuRow[] = [
       },
     ],
   },
-  { label: "Admissions", href: "#admission" },
-  { label: "FAQs", href: "#faqs" },
+  { label: "Admissions", href: "/#admission" },
+  { label: "FAQs", href: "/#faqs" },
   { label: "IAIB", href: `${SOT}/events/iaib` },
   { label: "Catalyst", href: `${SOT}/catalyst` },
   {
@@ -77,7 +78,10 @@ const MENU: MenuRow[] = [
       { label: "Contact Us", href: `${SOT}/contactus` },
       { label: "Privacy Policy", href: `${SOT}/privacy-policy` },
       { label: "Terms & Conditions", href: `${SOT}/terms-and-conditions` },
-      { label: "Admission Policy", href: `${SOT}/terms-and-conditions/admission-policy` },
+      {
+        label: "Admission Policy",
+        href: `${SOT}/terms-and-conditions/admission-policy`,
+      },
     ],
   },
 ];
@@ -106,7 +110,9 @@ const MENU: MenuRow[] = [
  * and Close) and the bar fades away while it is open. Esc, Close or a click
  * on the dimmed page dismisses it; smooth scroll is paused while it is open.
  */
-export function Navbar() {
+/** `links`: the centre pill of section links, which belong to the home page;
+ *  other pages (the campus pages) leave it out */
+export function Navbar({ links = true }: { links?: boolean } = {}) {
   const root = useRef<HTMLElement>(null);
   const pill = useRef<HTMLUListElement>(null);
   const tl = useRef<gsap.core.Timeline | null>(null);
@@ -134,15 +140,33 @@ export function Navbar() {
 
   /* ------------------------------------------------ white bar after the hero */
   useEffect(() => {
-    const hero = document.querySelector("main > section");
-    if (!hero) return;
-    const trigger = ScrollTrigger.create({
-      trigger: hero,
-      start: "bottom top+=60",
-      onEnter: () => setSolid(true),
-      onLeaveBack: () => setSolid(false),
+    let trigger: ScrollTrigger | undefined;
+    // the first section in main: the hero (on the campus pages it sits a
+    // level deeper, inside the page's own wrapper)
+    const attach = () => {
+      const hero = document.querySelector("main section");
+      if (!hero) return false;
+      trigger = ScrollTrigger.create({
+        trigger: hero,
+        start: "bottom top+=60",
+        onEnter: () => setSolid(true),
+        onLeaveBack: () => setSolid(false),
+      });
+      return true;
+    };
+    if (attach()) return () => trigger?.kill();
+    // a campus page's content can stream in after the bar mounts (arriving
+    // by a link): wait for its hero, then attach
+    const main = document.querySelector("main");
+    if (!main) return;
+    const mo = new MutationObserver(() => {
+      if (attach()) mo.disconnect();
     });
-    return () => trigger.kill();
+    mo.observe(main, { childList: true, subtree: true });
+    return () => {
+      mo.disconnect();
+      trigger?.kill();
+    };
   }, []);
 
   /* ------------------------------------------------ dark bar over dark sections */
@@ -175,8 +199,18 @@ export function Navbar() {
       tl.current = gsap
         .timeline({ paused: true, defaults: { ease: "expo.out" } })
         .set(q(".menu-root"), { autoAlpha: 1 })
-        .fromTo(q(".menu-backdrop"), { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.5, ease: "power2.out" }, 0)
-        .fromTo(q(".menu-panel"), { xPercent: 106 }, { xPercent: 0, duration: 0.85 }, 0)
+        .fromTo(
+          q(".menu-backdrop"),
+          { autoAlpha: 0 },
+          { autoAlpha: 1, duration: 0.5, ease: "power2.out" },
+          0,
+        )
+        .fromTo(
+          q(".menu-panel"),
+          { xPercent: 106 },
+          { xPercent: 0, duration: 0.85 },
+          0,
+        )
         .fromTo(
           q(".menu-link"),
           { y: 24, autoAlpha: 0 },
@@ -198,7 +232,8 @@ export function Navbar() {
     if (open) {
       lenis?.stop();
       document.documentElement.style.overflow = "hidden";
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) t?.progress(1);
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches)
+        t?.progress(1);
       else t?.timeScale(1).play();
     } else {
       lenis?.start();
@@ -230,7 +265,11 @@ export function Navbar() {
         <span className="block text-[15px] font-semibold leading-snug text-ink transition-colors duration-300 group-hover/sub:text-accent">
           {link.label}
         </span>
-        {link.note && <span className="mt-0.5 block text-[12.5px] text-body">{link.note}</span>}
+        {link.note && (
+          <span className="mt-0.5 block text-[12.5px] text-body">
+            {link.note}
+          </span>
+        )}
         {link.tag && (
           <span className="mt-1.5 inline-block rounded-[4px] bg-accent px-1.5 py-0.5 text-[10px] font-bold text-white">
             {link.tag}
@@ -262,42 +301,48 @@ export function Navbar() {
         <nav className="container-page flex h-[60px] items-center justify-between gap-4">
           <Logo onDark={dark && !open} />
 
-          <ul
-            ref={pill}
-            onMouseLeave={() => moveTab(0)}
-            className={`relative hidden items-center rounded-[6px] border p-1 backdrop-blur-xl transition-[opacity,background-color,border-color,box-shadow] duration-300 lg:flex ${
-              solid ? "border-transparent bg-transparent" : "border-white/70 bg-white/70 shadow-[var(--shadow-sm)]"
-            } ${
-              open ? "pointer-events-none opacity-0" : "opacity-100"
-            }`}
-          >
-            {NAV_LINKS.map((link, i) => (
-              <li key={link.href} onMouseEnter={() => moveTab(i)} className="relative z-[1]">
-                <Link
-                  href={link.href}
-                  className={`block whitespace-nowrap rounded-[4px] px-4 py-1.5 text-[14px] font-medium transition-colors duration-300 ${
-                    tab.index === i
-                      ? dark
-                        ? "text-ink"
-                        : "text-white"
-                      : dark
-                        ? "text-white/70 hover:text-white"
-                        : "text-body hover:text-ink"
-                  }`}
+          {links && (
+            <ul
+              ref={pill}
+              onMouseLeave={() => moveTab(0)}
+              className={`relative hidden items-center rounded-[6px] border p-1 backdrop-blur-xl transition-[opacity,background-color,border-color,box-shadow] duration-300 lg:flex ${
+                solid
+                  ? "border-transparent bg-transparent"
+                  : "border-white/70 bg-white/70 shadow-[var(--shadow-sm)]"
+              } ${open ? "pointer-events-none opacity-0" : "opacity-100"}`}
+            >
+              {NAV_LINKS.map((link, i) => (
+                <li
+                  key={link.href}
+                  onMouseEnter={() => moveTab(i)}
+                  className="relative z-[1]"
                 >
-                  {link.label}
-                </Link>
-              </li>
-            ))}
-            {/* the sliding tab */}
-            <span
-              aria-hidden
-              style={{ left: tab.left, width: tab.width }}
-              className={`absolute inset-y-1 rounded-[4px] transition-[left,width,background-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-                dark ? "bg-white" : "bg-ink"
-              }`}
-            />
-          </ul>
+                  <Link
+                    href={link.href}
+                    className={`block whitespace-nowrap rounded-[4px] px-4 py-1.5 text-[14px] font-medium transition-colors duration-300 ${
+                      tab.index === i
+                        ? dark
+                          ? "text-ink"
+                          : "text-white"
+                        : dark
+                          ? "text-white/70 hover:text-white"
+                          : "text-body hover:text-ink"
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+              {/* the sliding tab */}
+              <span
+                aria-hidden
+                style={{ left: tab.left, width: tab.width }}
+                className={`absolute inset-y-1 rounded-[4px] transition-[left,width,background-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                  dark ? "bg-white" : "bg-ink"
+                }`}
+              />
+            </ul>
+          )}
 
           <div className="flex items-center gap-2">
             <GlowButton
@@ -316,7 +361,9 @@ export function Navbar() {
               aria-expanded={open}
               aria-controls="site-menu"
               className={`group inline-flex h-[38px] items-center gap-3 rounded-[6px] pl-4 pr-3.5 text-[13.5px] font-semibold transition-colors ${
-                dark && !open ? "bg-white text-ink hover:bg-white/90" : "bg-ink text-white hover:bg-black"
+                dark && !open
+                  ? "bg-white text-ink hover:bg-white/90"
+                  : "bg-ink text-white hover:bg-black"
               }`}
             >
               <span className="relative block h-4 overflow-hidden">
@@ -333,7 +380,9 @@ export function Navbar() {
               <span aria-hidden className="relative block size-3.5">
                 <span
                   className={`absolute left-0 h-[1.5px] w-full transition-all ${dark && !open ? "bg-ink" : "bg-white"} duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-                    open ? "top-1/2 -translate-y-1/2 rotate-45" : "top-[3px] rotate-0"
+                    open
+                      ? "top-1/2 -translate-y-1/2 rotate-45"
+                      : "top-[3px] rotate-0"
                   }`}
                 />
                 <span
@@ -350,7 +399,12 @@ export function Navbar() {
       </div>
 
       {/* ------------------------------------------------------------ panel */}
-      <div id="site-menu" aria-hidden={!open} inert={!open} className="menu-root invisible fixed inset-0 z-40">
+      <div
+        id="site-menu"
+        aria-hidden={!open}
+        inert={!open}
+        className="menu-root invisible fixed inset-0 z-40"
+      >
         {/* the page, dimmed and blurred; a click on it closes the menu */}
         <div
           onClick={close}
@@ -372,7 +426,12 @@ export function Navbar() {
               className="group inline-flex h-[38px] items-center gap-2 rounded-[6px] bg-ink pl-4 pr-3 text-[13.5px] font-semibold text-white transition-colors hover:bg-accent"
             >
               Close
-              <X size={15} strokeWidth={2.2} aria-hidden className="transition-transform duration-500 group-hover:rotate-90" />
+              <X
+                size={15}
+                strokeWidth={2.2}
+                aria-hidden
+                className="transition-transform duration-500 group-hover:rotate-90"
+              />
             </button>
           </div>
           <nav aria-label="Site" className="px-6 sm:px-8">
@@ -381,7 +440,9 @@ export function Navbar() {
                 const active = group === i;
                 const head = (
                   <>
-                    <span className="w-6 shrink-0 font-mono text-[11px] text-accent">{String(i + 1).padStart(2, "0")}</span>
+                    <span className="w-6 shrink-0 font-mono text-[11px] text-accent">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
                     {/* the label rolls up to a fresh copy on hover */}
                     <span className="relative block h-[1.3em] overflow-hidden font-display text-[20px] font-bold leading-[1.3] tracking-[-0.02em] sm:text-[22px] tracking-[-0.03em]">
                       <span
@@ -399,7 +460,9 @@ export function Navbar() {
                       <ArrowRight
                         aria-hidden
                         className={`ml-auto size-4 shrink-0 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-                          active ? "-rotate-90 text-accent" : "rotate-90 text-ink/30 group-hover:text-accent"
+                          active
+                            ? "-rotate-90 text-accent"
+                            : "rotate-90 text-ink/30 group-hover:text-accent"
                         }`}
                       />
                     ) : (
@@ -410,9 +473,13 @@ export function Navbar() {
                     )}
                   </>
                 );
-                const rowClass = "group flex w-full items-center gap-4 py-3 text-left";
+                const rowClass =
+                  "group flex w-full items-center gap-4 py-3 text-left";
                 return (
-                  <li key={row.label} className="menu-link border-b border-ink/10">
+                  <li
+                    key={row.label}
+                    className="menu-link border-b border-ink/10"
+                  >
                     {row.links ? (
                       <button
                         type="button"
@@ -423,7 +490,11 @@ export function Navbar() {
                         {head}
                       </button>
                     ) : (
-                      <Link href={row.href ?? "/"} onClick={close} className={rowClass}>
+                      <Link
+                        href={row.href ?? "/"}
+                        onClick={close}
+                        className={rowClass}
+                      >
                         {head}
                       </Link>
                     )}
@@ -455,11 +526,19 @@ export function Navbar() {
           <div className="mt-auto px-6 pb-6 pt-8 sm:px-8">
             <div className="menu-fade rounded-[6px] bg-sunken p-4">
               <p className="font-display text-[17px] font-bold leading-tight tracking-[-0.02em] text-ink">
-                AI-First B.Tech in <span className="text-accent">Computer Science</span>
+                AI-First B.Tech in{" "}
+                <span className="text-accent">Computer Science</span>
               </p>
-              <p className="mt-1 text-[13.5px] text-body">Admission starts with uGNET</p>
+              <p className="mt-1 text-[13.5px] text-body">
+                Admission starts with uGNET
+              </p>
               <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-                <GlowButton href="#apply" streak="#0b0d12" size="sm" onClick={close}>
+                <GlowButton
+                  href="#apply"
+                  streak="#0b0d12"
+                  size="sm"
+                  onClick={close}
+                >
                   Apply Now
                   <ArrowRight size={14} strokeWidth={2.2} aria-hidden />
                 </GlowButton>
@@ -482,7 +561,12 @@ export function Navbar() {
                     aria-label={`upGrad School of Technology on ${s.label}`}
                     className="grid size-9 place-items-center rounded-[6px] border border-ink/10 text-ink/70 transition-colors duration-300 hover:border-ink hover:bg-ink hover:text-white"
                   >
-                    <svg viewBox="0 0 24 24" aria-hidden className="size-4" fill="currentColor">
+                    <svg
+                      viewBox="0 0 24 24"
+                      aria-hidden
+                      className="size-4"
+                      fill="currentColor"
+                    >
                       <path d={s.path} />
                     </svg>
                   </a>

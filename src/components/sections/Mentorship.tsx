@@ -211,7 +211,7 @@ export function Mentorship() {
                     if (on) play(v);
                     else go(i);
                   }}
-                  className="group relative block aspect-[4/5] w-full overflow-hidden rounded-[6px] bg-ink text-left shadow-[0_24px_50px_-24px_rgba(11,13,18,0.55)] outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                  className="group relative block aspect-[4/5] w-full overflow-hidden rounded-[6px] bg-ink text-left outline-none focus-visible:ring-2 focus-visible:ring-accent"
                 >
                   <Image
                     src={thumb(v)}
