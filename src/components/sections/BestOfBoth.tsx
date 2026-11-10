@@ -4,9 +4,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { Reveal } from "@/components/motion/Reveal";
 import { LazyVideo } from "@/components/site/LazyVideo";
-import { SectionHeading } from "@/components/site/SectionHeading";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -27,9 +25,12 @@ gsap.registerPlugin(ScrollTrigger);
  * They run in sequence, not together: the panels must not appear while the
  * heading is still moving, or the two overlap mid-flight.
  *
- * Below lg, and for prefers-reduced-motion, the pinning is skipped entirely and
- * the section renders as a plain heading + the two panels, revealed on scroll:
- * a pinned stage that eats scroll is hostile on a phone.
+ * Below lg the pinning is skipped (a pinned stage that eats scroll is hostile
+ * on a phone) but the same idea plays as the section scrolls by: the
+ * heading's first line slides in from the left and its second from the right,
+ * then the University panel from the left and the Silicon Valley panel from
+ * the right, each scrubbed by the scroll as it comes up the screen. Under
+ * prefers-reduced-motion everything simply shows.
  *
  * Type follows the site-wide section style: bold display with the red accent
  * words in the Bricolage Grotesque accent face.
@@ -329,6 +330,32 @@ export function BestOfBoth() {
     };
   }, [animated]);
 
+  // below lg: each line and panel slides in from its side as it comes up the
+  // screen, scrubbed by the scroll (no pinning)
+  const flatRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (animated) return;
+    const flat = flatRef.current;
+    if (!flat || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const tweens = gsap.utils.toArray<HTMLElement>("[data-from]", flat).map((el) =>
+      gsap.fromTo(
+        el,
+        { xPercent: el.dataset.from === "left" ? -70 : 70, autoAlpha: 0 },
+        {
+          xPercent: 0,
+          autoAlpha: 1,
+          ease: "none",
+          scrollTrigger: { trigger: el, start: "top 92%", end: "top 55%", scrub: 0.6 },
+        },
+      ),
+    );
+    return () =>
+      tweens.forEach((t) => {
+        t.scrollTrigger?.kill();
+        t.kill();
+      });
+  }, [animated]);
+
   // Autoplay alone wasn't starting this video (loaded, readyState 4, but left
   // paused), which shows as an empty gradient panel. Start it explicitly once
   // the pinned stage exists, and again whenever it scrolls into view.
@@ -488,14 +515,18 @@ export function BestOfBoth() {
           </div>
         </div>
       ) : (
-        <div className="container-page py-12">
-          <SectionHeading
-            title="Where World-Class University Meets"
-            accent="Silicon Valley Learning"
-            size="md"
-          />
-          <Reveal className="mt-12 grid gap-5 md:grid-cols-2" stagger={0.12}>
-            <div data-reveal-item>
+        <div ref={flatRef} className="container-page overflow-x-clip py-8">
+          {/* the two lines come in from either side, as the halves do on desktop */}
+          <h2 className="text-center font-display text-[clamp(1.375rem,5.8vw,2.25rem)] font-bold leading-[1.2] tracking-[-0.03em] text-ink">
+            <span data-from="left" className="block">
+              Where World-Class University
+            </span>
+            <span data-from="right" className="block">
+              Meets <span className={accentClass}>Silicon Valley Learning</span>
+            </span>
+          </h2>
+          <div className="mt-12 grid gap-5 md:grid-cols-2">
+            <div data-from="left">
               <Panel
                 watermark="UNIVERSITY"
                 title="University Advantage"
@@ -504,7 +535,7 @@ export function BestOfBoth() {
                 dark={false}
               />
             </div>
-            <div data-reveal-item>
+            <div data-from="right">
               <Panel
                 watermark="SILICON"
                 title="Silicon Valley Style Learning"
@@ -513,7 +544,7 @@ export function BestOfBoth() {
                 dark
               />
             </div>
-          </Reveal>
+          </div>
         </div>
       )}
     </section>

@@ -278,7 +278,7 @@ export function Specializations() {
   const hoverEnd = () => window.clearTimeout(hoverTimer.current);
 
   return (
-    <section id="specializations" className="relative bg-canvas py-12 lg:py-28">
+    <section id="specializations" className="relative bg-canvas py-8 lg:py-28">
       <div className="container-page relative">
         <SectionHeading
           title="New-Gen Engineering"

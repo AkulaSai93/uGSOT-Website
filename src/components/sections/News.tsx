@@ -305,7 +305,7 @@ export function News() {
     <section
       ref={root}
       id="news"
-      className="bg-canvas pb-12 pt-12 lg:pb-14 lg:pt-28"
+      className="bg-canvas pb-8 pt-8 lg:pb-14 lg:pt-28"
     >
       <div className="container-page">
         <SectionHeading

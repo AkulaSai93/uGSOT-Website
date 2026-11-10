@@ -186,7 +186,7 @@ export function Campuses() {
   const c = CAMPUSES[active];
 
   return (
-    <section id="campuses" className="bg-canvas py-12 lg:py-28">
+    <section id="campuses" className="bg-canvas py-8 lg:py-28">
       <div className="container-page">
         <SectionHeading
           title="Our"

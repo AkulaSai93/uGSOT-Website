@@ -108,7 +108,7 @@ export function Festivals() {
     <section ref={root} id="festivals" className="bg-canvas">
       {/* lg+: a tall track; the screen inside holds while the row slides */}
       <div data-track className="relative lg:h-[280vh]">
-        <div className="pb-12 pt-12 lg:sticky lg:top-0 lg:flex lg:h-[100svh] lg:flex-col lg:justify-center lg:overflow-hidden lg:pb-0 lg:pt-16">
+        <div className="pb-8 pt-8 lg:sticky lg:top-0 lg:flex lg:h-[100svh] lg:flex-col lg:justify-center lg:overflow-hidden lg:pb-0 lg:pt-16">
           <div className="container-page">
             <SectionHeading
               title="Festival"

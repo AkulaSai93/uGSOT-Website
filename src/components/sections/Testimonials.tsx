@@ -202,7 +202,7 @@ export function Testimonials() {
     <section
       ref={root}
       id="testimonials"
-      className="overflow-x-clip bg-canvas pt-12 lg:pt-28"
+      className="overflow-x-clip bg-canvas pt-8 lg:pt-28"
     >
       <div className="container-page">
         <SectionHeading

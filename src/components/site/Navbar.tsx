@@ -31,11 +31,12 @@ type MenuLink = { label: string; href: string; note?: string; tag?: string };
 type MenuRow = { label: string; href?: string; links?: MenuLink[] };
 
 /**
- * Everything the Menu lists, as on sot.upgrad.com's menu: its two campuses,
- * the Resources and Help and Support lists under More, and the top-level
- * links. The menu is drawn from this alone. Each row is either a link
- * (`href`) or a group (`links`) that opens under its name to show them —
- * add a link to a group, or a new row, and it takes its place.
+ * Everything the Menu lists, as on sot.upgrad.com's menu: its top-level links
+ * (Home, Admissions, FAQs, IAIB, Catalyst), its two campuses, and the
+ * Resource and Help and Support lists under its More. The menu is drawn from
+ * this alone. Each row is either a link (`href`) or a group (`links`) that
+ * opens under its name to show them — add a link to a group, or a new row,
+ * and it takes its place. Admissions and FAQs go to this page's own sections.
  */
 const MENU: MenuRow[] = [
   { label: "Home", href: "/" },
@@ -56,6 +57,10 @@ const MENU: MenuRow[] = [
       },
     ],
   },
+  { label: "Admissions", href: "#admission" },
+  { label: "FAQs", href: "#faqs" },
+  { label: "IAIB", href: `${SOT}/events/iaib` },
+  { label: "Catalyst", href: `${SOT}/catalyst` },
   {
     label: "Resources",
     links: [
@@ -63,16 +68,16 @@ const MENU: MenuRow[] = [
       { label: "Ignite AI Buildathon", href: `${SOT}/events/iaib` },
       { label: "uGNET", href: `${SOT}/uGNET` },
       { label: "EDP", href: `${SOT}/edp` },
+      { label: "Blogs", href: `${SOT}/blogs` },
     ],
   },
-  { label: "Catalyst", href: `${SOT}/catalyst` },
   {
     label: "Help and Support",
     links: [
-      { label: "Admissions", href: "#admission" },
-      { label: "FAQs", href: "#faqs" },
-      { label: "Blogs", href: `${SOT}/blogs` },
-      { label: "Get in Touch", href: `${SOT}/contactus` },
+      { label: "Contact Us", href: `${SOT}/contactus` },
+      { label: "Privacy Policy", href: `${SOT}/privacy-policy` },
+      { label: "Terms & Conditions", href: `${SOT}/terms-and-conditions` },
+      { label: "Admission Policy", href: `${SOT}/terms-and-conditions/admission-policy` },
     ],
   },
 ];
@@ -96,9 +101,10 @@ const MENU: MenuRow[] = [
  * label rolls up to a fresh copy on hover — and a group (Campuses,
  * Resources…) opens under its name in place. At its foot the programme line,
  * Apply Now, the admissions number and the school's social links. The panel
- * scrolls if the list grows past the screen; on phones it is full width. The panel has its own header (logo and Close) and the bar fades away
- * while it is open. Esc, Close or a click on the dimmed page dismisses it;
- * smooth scroll is paused while it is open.
+ * scrolls if the list grows past the screen; on phones it leaves a strip of
+ * the dimmed page showing at the left. The panel has its own header (logo
+ * and Close) and the bar fades away while it is open. Esc, Close or a click
+ * on the dimmed page dismisses it; smooth scroll is paused while it is open.
  */
 export function Navbar() {
   const root = useRef<HTMLElement>(null);
@@ -353,7 +359,7 @@ export function Navbar() {
 
         <div
           data-lenis-prevent
-          className="menu-panel absolute inset-y-0 right-0 flex w-[min(420px,100vw)] flex-col overflow-y-auto rounded-l-[6px] bg-white shadow-[var(--shadow-lg)]"
+          className="menu-panel absolute inset-y-0 right-0 flex w-[min(420px,86vw)] flex-col overflow-y-auto rounded-l-[6px] bg-white shadow-[var(--shadow-lg)]"
         >
           {/* the panel's own header: the logo, and Close level with the
               panel's padding (the bar fades away while the panel is open) */}

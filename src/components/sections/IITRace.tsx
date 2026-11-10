@@ -98,7 +98,7 @@ export function IITRace() {
   );
 
   return (
-    <section ref={root} id="iit-race" className="bg-canvas pb-12 lg:pb-14">
+    <section ref={root} id="iit-race" className="bg-canvas pb-8 lg:pb-14">
       {/* the two shows in white on a full-width red band, running right to left */}
       <div aria-hidden className="overflow-hidden bg-accent py-3">
         <div data-track className="flex w-max will-change-transform">
@@ -112,13 +112,16 @@ export function IITRace() {
 
       <div className="container-page">
         <div className="mt-14 grid items-center gap-10 lg:mt-16 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:gap-16">
-          <div data-copy>
-            <Lockup />
+          {/* centred above the video on phones and tablets; beside it, left-aligned, on desktop */}
+          <div data-copy className="max-lg:text-center">
+            <div className="flex max-lg:justify-center">
+              <Lockup />
+            </div>
             <h2 className="mt-10 font-display text-[clamp(1.75rem,3vw,2.5rem)] font-bold leading-[1.1] tracking-[-0.03em] text-ink">
               Inside The{" "}
               <span className="font-[family-name:var(--font-bricolage)] font-semibold text-accent">IIT Race</span>
             </h2>
-            <p className="mt-5 max-w-[520px] text-[16px] leading-relaxed text-body">
+            <p className="mt-5 max-w-[520px] text-balance text-[16px] leading-relaxed text-body max-lg:mx-auto">
               The reality behind the IIT dream, what students are rarely told about placement packages,
               and why chasing salary numbers often creates the wrong expectations.
             </p>

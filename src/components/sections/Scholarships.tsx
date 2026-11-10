@@ -21,8 +21,7 @@ gsap.registerPlugin(ScrollTrigger, useGSAP);
  * huge "100%" (its % in brand red) with "Scholarship" under it; on the right,
  * the line and "Check eligibility", with the hero's moving line round its
  * edge. Under a hairline, the four scholarships as the section's original flip
- * cards (see ScholarshipCard) — on phones a row to swipe through, a card at a
- * time.
+ * cards (see ScholarshipCard) — stacked one under another on phones.
  *
  * Motion (GSAP, as the band comes into view): the "100" counts up from 0
  * while the heading rises in, then the cards rise in one after another. Under
@@ -112,7 +111,7 @@ function ScholarshipCard({ s }: { s: Scholarship }) {
   };
 
   return (
-    <li data-card className="[perspective:1400px] max-sm:w-[78vw] max-sm:shrink-0 max-sm:snap-center">
+    <li data-card className="[perspective:1400px]">
       <div
         ref={inner}
         className="relative aspect-[4/5] [transform-style:preserve-3d]"
@@ -258,7 +257,7 @@ export function Scholarships() {
   );
 
   return (
-    <section ref={root} id="scholarships" style={{ background: YELLOW }} className="relative overflow-hidden py-14 lg:py-24">
+    <section ref={root} id="scholarships" style={{ background: YELLOW }} className="relative overflow-hidden py-10 lg:py-24">
       {/* a soft light across the top left, so the yellow reads rich, not flat */}
       <div
         aria-hidden
@@ -310,8 +309,8 @@ export function Scholarships() {
           </div>
         </div>
 
-        {/* below sm, a row to swipe through, a card at a time; above, a grid */}
-        <ul className="mt-10 border-t border-ink/15 pt-10 max-sm:-mx-5 max-sm:flex max-sm:snap-x max-sm:snap-mandatory max-sm:gap-4 max-sm:overflow-x-auto max-sm:px-5 max-sm:pb-2 max-sm:[scrollbar-width:none] sm:grid sm:grid-cols-2 sm:gap-5 lg:mt-14 lg:grid-cols-4 lg:pt-14">
+        {/* one under another on phones, two across on tablets, four on desktop */}
+        <ul className="mt-10 grid gap-5 border-t border-ink/15 pt-10 sm:grid-cols-2 lg:mt-14 lg:grid-cols-4 lg:pt-14">
           {SCHOLARSHIPS.map((s) => (
             <ScholarshipCard key={s.key} s={s} />
           ))}

@@ -179,7 +179,7 @@ export function Social() {
   );
 
   return (
-    <section ref={root} id="social" className="overflow-x-clip bg-canvas py-14 lg:py-24">
+    <section ref={root} id="social" className="overflow-x-clip bg-canvas py-10 lg:py-24">
       <div className="container-page">
         <SectionHeading
           title="Follow Our Journey on"

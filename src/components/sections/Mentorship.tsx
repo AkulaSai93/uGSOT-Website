@@ -144,7 +144,7 @@ export function Mentorship() {
   );
 
   return (
-    <section ref={root} id="mentorship" className="bg-[#ffdf8f] py-12 lg:py-20">
+    <section ref={root} id="mentorship" className="bg-[#ffdf8f] py-8 lg:py-20">
       <div className="container-page">
         <SectionHeading
           title="Special"

@@ -21,7 +21,7 @@ const STATS = [
 export function Legacy() {
   return (
     <section id="legacy" className="bg-canvas">
-      <div className="container-page flex flex-col items-center gap-14 py-12 lg:py-28">
+      <div className="container-page flex flex-col items-center gap-14 py-8 lg:py-28">
         <SectionHeading
           title="Backed by"
           accent="upGrad’s Learning Ecosystem"

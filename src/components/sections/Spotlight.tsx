@@ -24,8 +24,9 @@ gsap.registerPlugin(ScrollTrigger, useGSAP);
  * leaning back and turned in 3D; scrubbed by the scroll they all drift out
  * together towards the edges, flattening and settling as they go, until the
  * heading sits uncovered in the middle. Every card plays its video in the player overlay.
- * Below lg (and for reduced motion) there is no hold: the heading, then the
- * cards in a grid.
+ * Below lg there is no hold: the heading, then the cards on a strip that
+ * drifts right to left without end (easing to a stop under the mouse); under
+ * reduced motion it holds still and scrolls sideways.
  */
 const v = (id: string, name: string): Video => ({
   id,
@@ -174,22 +175,38 @@ export function Spotlight() {
       mm.add(
         "(max-width: 1023px) and (prefers-reduced-motion: no-preference)",
         () => {
+          // the strip drifts right to left without end (rendered twice and
+          // slid by half its width, so the seam never shows), easing to a stop
+          // under the mouse so a card can be picked
+          const strip = q("[data-strip]")[0];
+          const loop = gsap.fromTo(
+            q("[data-strack]"),
+            { xPercent: 0 },
+            { xPercent: -50, duration: 45, ease: "none", repeat: -1, force3D: true },
+          );
+          const ease = (e: Event) =>
+            gsap.to(loop, {
+              timeScale: e.type === "pointerenter" && (e as PointerEvent).pointerType === "mouse" ? 0 : 1,
+              duration: 0.7,
+              ease: "power2.out",
+            });
+          strip.addEventListener("pointerenter", ease);
+          strip.addEventListener("pointerleave", ease);
           gsap.fromTo(
-            q("[data-mcard]"),
+            strip,
             { y: 40, autoAlpha: 0 },
             {
               y: 0,
               autoAlpha: 1,
               duration: 1,
               ease: "expo.out",
-              stagger: 0.06,
-              scrollTrigger: {
-                trigger: q("[data-mgrid]")[0],
-                start: "top 85%",
-                toggleActions: "play none none none",
-              },
+              scrollTrigger: { trigger: strip, start: "top 90%", toggleActions: "play none none none" },
             },
           );
+          return () => {
+            strip.removeEventListener("pointerenter", ease);
+            strip.removeEventListener("pointerleave", ease);
+          };
         },
       );
       return () => mm.revert();
@@ -198,7 +215,7 @@ export function Spotlight() {
   );
 
   return (
-    <section ref={root} id="spotlight" className="bg-canvas max-lg:py-12">
+    <section ref={root} id="spotlight" className="bg-canvas max-lg:py-8">
       {/* lg+: a tall track; the screen inside holds while the cards fly out */}
       <div data-track className="relative lg:h-[280vh]">
         <div
@@ -239,16 +256,24 @@ export function Spotlight() {
         </div>
       </div>
 
-      {/* below lg: the cards in a grid under the heading */}
+      {/* below lg: the cards on a moving strip under the heading, its ends
+          fading into the page */}
       <div
-        data-mgrid
-        className="container-page mt-12 grid gap-4 sm:grid-cols-2 lg:hidden"
+        data-strip
+        className="mt-10 overflow-hidden py-2 [mask-image:linear-gradient(90deg,transparent,#000_8%,#000_92%,transparent)] motion-reduce:overflow-x-auto lg:hidden"
       >
-        {CARDS.map((c) => (
-          <div key={c.id} data-mcard>
-            <Card c={c} onOpen={setPlaying} />
-          </div>
-        ))}
+        <ul data-strack className="flex w-max will-change-transform">
+          {[...CARDS, ...CARDS].map((c, i) => (
+            <li
+              key={`${c.id}-${i}`}
+              aria-hidden={i >= CARDS.length || undefined}
+              inert={i >= CARDS.length}
+              className="mr-4 w-[min(72vw,280px)] shrink-0"
+            >
+              <Card c={c} onOpen={setPlaying} />
+            </li>
+          ))}
+        </ul>
       </div>
 
       {playing && (
