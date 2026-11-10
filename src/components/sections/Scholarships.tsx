@@ -34,6 +34,8 @@ type Scholarship = {
   key: string;
   title: string;
   criteria: string;
+  /** the card's picture (public/images/scholarships/flat) */
+  art: string;
   /** Ronnie Screwvala's portrait, shown as a round badge on his card */
   badge?: string;
 };
@@ -42,38 +44,55 @@ const SCHOLARSHIPS: Scholarship[] = [
   {
     key: "merit",
     title: "Merit-Based Scholarship",
+    art: "merit-8.webp",
     criteria:
       "Awarded to students with strong academic performance or outstanding achievements. This scholarship recognizes hard work, discipline, and excellence in studies.",
   },
   {
     key: "need",
     title: "Need-Based Scholarship",
+    art: "need-8.webp",
     criteria:
       "Designed for students who require financial support to pursue their education. It ensures that deserving learners are not held back due to economic constraints.",
   },
   {
     key: "girls-in-tech",
     title: "Girls in Tech Scholarship",
+    art: "girls-in-tech-8.webp",
     criteria:
       "A dedicated scholarship to encourage more young women to enter and excel in technology. It supports aspiring female students who want to build successful careers in tech.",
   },
   {
     key: "innovators",
     title: "Ronnie Screwvala Scholarship for Budding Tech Innovators",
+    art: "innovators-9.webp",
     badge: "/images/scholarships/v3/ronnie-badge.jpg",
     criteria:
       "Given to students who show early talent, creativity, or passion for building innovative tech solutions. It supports future innovators who want to solve real-world problems using technology.",
   },
 ];
 
+/** the pictures' cream background, which the whole card front takes */
+const GROUND = "#fff6e3";
+
 /* ------------------------------------------------------------ a card */
 
 /**
- * The section's first card design, as before: a tall picture (Figma AI
- * artwork) with the name in its clear top third and a frosted-glass "View
- * eligibility" bar across the foot, which turns the card over (a 3D flip) to
- * its red back — the eligibility criteria and Know More; "Back" turns it
- * round again.
+ * The section's first card design, as before: the name over a tall picture and
+ * a "View eligibility" bar across the foot, which turns the card over (a 3D
+ * flip) to its red back — the
+ * eligibility criteria and Know More; "Back" turns it round again.
+ *
+ * The pictures are Figma AI illustrations in the client's chosen style (after
+ * a flat, bold fintech-campaign reference): flat shapes on warm cream (the
+ * client's pick of six shown on the band), with butter yellow, gold, ink and
+ * touches of upGrad red, each card its own scene and outfit colour — green,
+ * yellow, red, blue (public/images/scholarships/flat, the *-8 set: Merit's
+ * drawn on cream; the others repainted to cream from the generated
+ * red/charcoal, Girls in Tech's jacket recoloured red; all trimmed to their
+ * content so each fills its card). The title sits on a strip of the
+ * same colour, the picture is fitted whole between it and the bar, and the
+ * bar is solid ink at the foot.
  */
 function ScholarshipCard({ s }: { s: Scholarship }) {
   const [flipped, setFlipped] = useState(false);
@@ -98,39 +117,44 @@ function ScholarshipCard({ s }: { s: Scholarship }) {
         ref={inner}
         className="relative aspect-[4/5] [transform-style:preserve-3d]"
       >
-        {/* front: the picture, with the title in its clear top third */}
+        {/* front: the title on a strip of the picture's own background, the
+            picture fitted whole below it, the bar at the foot */}
         <div
           inert={flipped}
-          className="group absolute inset-0 overflow-hidden rounded-[6px] bg-ink [backface-visibility:hidden]"
+          style={{ background: GROUND }}
+          className="group absolute inset-0 overflow-hidden rounded-[6px] [backface-visibility:hidden]"
         >
-          <Image
-            src={`/images/scholarships/v3/${s.key}.jpg`}
-            alt=""
-            fill
-            sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
-            className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04]"
-          />
-          <div className="relative flex h-full flex-col justify-between">
-            <h3 className="mx-auto max-w-[300px] p-5 text-center font-display text-[19px] font-bold leading-[1.2] tracking-[-0.02em] text-white">
+          <div className="flex h-full flex-col">
+            <h3 className="shrink-0 px-4 pb-2 pt-5 text-center font-display text-[17px] font-bold leading-[1.2] tracking-[-0.02em] text-ink">
               {s.title}
             </h3>
-            {/* the badge (Ronnie's card only) sits above the button; the button
-                is a bar across the card's foot, edge to edge */}
-            <div className="flex flex-col">
+            {/* the picture, scaled to fit whole (never cropped) on the card's
+                cream */}
+            <div className="relative min-h-0 flex-1 overflow-hidden">
+              <Image
+                src={`/images/scholarships/flat/${s.art}`}
+                alt=""
+                fill
+                sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 80vw"
+                className="object-contain transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04]"
+              />
+              {/* Ronnie's card: his portrait on the picture's corner */}
               {s.badge && (
                 <Image
                   src={s.badge}
                   alt="Ronnie Screwvala"
-                  width={88}
-                  height={88}
-                  className="mb-3 mr-4 size-[88px] self-end rounded-full object-cover ring-2 ring-white/80 shadow-[0_8px_20px_-6px_rgba(0,0,0,0.6)]"
+                  width={64}
+                  height={64}
+                  className="absolute bottom-3 right-3 size-16 rounded-full object-cover ring-2 ring-white"
                 />
               )}
+            </div>
+            <div className="shrink-0">
               <button
                 type="button"
                 onClick={() => turn(true)}
                 aria-expanded={flipped}
-                className="flex w-full items-center justify-center gap-2 border-t border-white/20 bg-white/10 px-4 py-3.5 text-[14px] font-semibold text-white backdrop-blur-md transition-colors duration-300 hover:bg-white hover:text-ink"
+                className="flex w-full items-center justify-center gap-2 bg-ink px-4 py-3.5 text-[14px] font-semibold text-white transition-colors duration-300 hover:bg-accent"
               >
                 View eligibility
                 <RotateCcw

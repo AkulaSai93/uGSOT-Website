@@ -41,10 +41,10 @@ gsap.registerPlugin(ScrollTrigger, useGSAP);
  * foot just below the function row. (The frame carries Apple's own photograph;
  * our MacBook Air render stands in for it.)
  *
- * Motion (GSAP, scrubbed by the scroll): on desktop the section holds the
- * screen (a 200vh track) while the MacBook — in full view throughout, never
- * faded — rises and grows into place and its display wakes; on smaller
- * screens the same plays as it comes up the screen, without the hold.
+ * Motion (GSAP, once, as the section comes into view): the MacBook simply
+ * appears — it fades in where it sits as its display lights up and the light
+ * pools under it. Nothing moves and the page never holds. Under reduced
+ * motion it is shown as it is.
  */
 
 /** corners measured on the 1536x864 render (the file is the same picture at
@@ -131,7 +131,7 @@ function Laptop() {
           sizes="1600px"
           className="object-cover"
         />
-        {/* dims the wallpaper until the laptop has risen into place */}
+        {/* dims the wallpaper until the laptop has appeared */}
         <span data-screen-off className="absolute inset-0 bg-black" />
         {/* a faint sheen across the glass */}
         <span className="pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,rgba(255,255,255,0.07)_0%,rgba(255,255,255,0)_40%)]" />
@@ -197,55 +197,21 @@ export function Toolkit() {
     () => {
       const q = gsap.utils.selector(root);
       const mm = gsap.matchMedia();
-      // the laptop is in full view from the start (never faded out against
-      // the black), its wallpaper already showing, dimmed, so it reads on the
-      // black; it rises and grows into place as the display brightens
-      const build = (scrollTrigger: ScrollTrigger.Vars) =>
+      // the laptop fades in where it sits as its display lights up
+      mm.add("(prefers-reduced-motion: no-preference)", () => {
         gsap
-          .timeline({ scrollTrigger })
-          .fromTo(
-            q("[data-laptop]"),
-            { yPercent: 22, scale: 0.84 },
-            { yPercent: 0, scale: 1, duration: 0.6, ease: "power2.out" },
-            0,
-          )
-          .fromTo(
-            q("[data-glow]"),
-            { opacity: 0.35 },
-            { opacity: 1, duration: 0.5 },
-            0,
-          )
-          .fromTo(
-            q("[data-screen-off]"),
-            { opacity: 0.55 },
-            { opacity: 0, duration: 0.5, ease: "power1.inOut" },
-            0,
-          );
-      // desktop: the section holds the screen while the scroll plays it
-      // through, as on apple.com
-      mm.add(
-        "(min-width: 1024px) and (prefers-reduced-motion: no-preference)",
-        () => {
-          build({
-            trigger: q("[data-track]")[0],
-            start: "top top",
-            end: "bottom bottom",
-            scrub: 0.8,
-          });
-        },
-      );
-      // smaller screens: no hold, it plays as the laptop comes up the screen
-      mm.add(
-        "(max-width: 1023px) and (prefers-reduced-motion: no-preference)",
-        () => {
-          build({
-            trigger: q("[data-laptop]")[0],
-            start: "top 95%",
-            end: "top 40%",
-            scrub: 0.8,
-          });
-        },
-      );
+          .timeline({
+            defaults: { ease: "power2.out" },
+            scrollTrigger: {
+              trigger: q("[data-laptop]")[0],
+              start: "top 85%",
+              toggleActions: "play none none none",
+            },
+          })
+          .fromTo(q("[data-laptop]"), { autoAlpha: 0 }, { autoAlpha: 1, duration: 1.2 }, 0)
+          .fromTo(q("[data-glow]"), { opacity: 0 }, { opacity: 1, duration: 1.4 }, 0.2)
+          .fromTo(q("[data-screen-off]"), { opacity: 0.6 }, { opacity: 0, duration: 1.2, ease: "power1.inOut" }, 0.3);
+      });
       // reduced motion: shown awake
       mm.add("(prefers-reduced-motion: reduce)", () => {
         gsap.set(q("[data-screen-off]"), { opacity: 0 });
@@ -262,9 +228,9 @@ export function Toolkit() {
       className="relative overflow-x-clip bg-[var(--tk-bg)]"
       style={LIGHT as React.CSSProperties}
     >
-      {/* lg+: a tall track; the screen inside holds while the laptop rises */}
-      <div data-track className="relative lg:h-[200vh]">
-        <div className="lg:sticky lg:top-0 lg:flex lg:h-[100svh] lg:flex-col lg:overflow-hidden">
+      {/* lg+: one screen tall, the laptop sized to the room under the heading */}
+      <div className="relative">
+        <div className="lg:flex lg:h-[100svh] lg:flex-col lg:overflow-hidden">
           <div className="container-page relative pt-14 lg:pt-[max(88px,10svh)]">
             <SectionHeading
               title="Your Innovation"
@@ -285,7 +251,7 @@ export function Toolkit() {
             />
             <div
               data-laptop
-              className="relative -ml-[2vw] aspect-[1536/770] w-[104vw] origin-bottom overflow-hidden md:mx-auto md:w-[min(1096px,84vw)] lg:w-[min(1096px,72vw,calc((100svh-300px)*1.99))]"
+              className="relative -ml-[2vw] aspect-[1536/770] w-[104vw] overflow-hidden md:mx-auto md:w-[min(1096px,84vw)] lg:w-[min(1096px,72vw,calc((100svh-300px)*1.99))]"
             >
               <Laptop />
             </div>
