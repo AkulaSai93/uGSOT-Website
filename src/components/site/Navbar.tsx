@@ -19,7 +19,7 @@ const DARK_SECTIONS = ["pathways", "leaders", "toolkit"];
 const NAV_LINKS = [
   { label: "Home", href: "/" },
   { label: "Campuses", href: "#campuses" },
-  { label: "More", href: "#more" },
+  { label: "Curriculum", href: "#curriculum" },
   { label: "FAQs", href: "#faqs" },
   { label: "Admission", href: "#admission" },
 ];

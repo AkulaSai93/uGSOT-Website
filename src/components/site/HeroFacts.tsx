@@ -4,16 +4,16 @@
  * Labels are written in capitals rather than set uppercase by CSS, so the
  * brand's lower-case "u" in uGNET survives.
  *
- * Every value is sourced from the live site — nothing invented:
+ * Sources:
  *  - Duration:    sot.upgrad.com/admission fee table runs Sem 1–8 → 4 years
- *  - uGNET:       sot.upgrad.com/uGNET — "MODE: Online (Assessment Platform)",
- *                 "EXAM TIME: Scheduled after you call admissions".
- *                 There is no fixed exam date published, so this cell states
- *                 the real scheduling model rather than a made-up date.
+ *  - uGNET:       the exam date is the client's (given Nov 2026; sot.upgrad.com
+ *                 itself still says "Scheduled after you call admissions");
+ *                 the mode is sot.upgrad.com/uGNET's "Online (Assessment
+ *                 Platform)". Update the date when the next exam is set.
  */
 const FACTS = [
   { label: "COURSE DURATION", value: "4 Years", note: "8 semesters" },
-  { label: "uGNET EXAM", value: "Scheduled on call", note: "Online test" },
+  { label: "uGNET EXAM", value: "12 Jan, 2027", note: "Online test" },
 ] as const;
 
 export function HeroFacts({ className = "" }: { className?: string }) {
